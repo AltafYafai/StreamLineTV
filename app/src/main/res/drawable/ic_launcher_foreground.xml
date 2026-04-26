@@ -2,16 +2,46 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
-    android:viewportWidth="108"
-    android:viewportHeight="108">
+    android:viewportWidth="200"
+    android:viewportHeight="200">
     
-    <!-- TV Frame -->
+    <!-- TV Outer Frame Shadow (Simulated) -->
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M20,30h68c4,0,8,4,8,8v32c0,4-4,8-8,8H20c-4,0-8-4-8-8V38C12,34,16,30,20,30z"/>
-        
-    <!-- Stream Line -->
+        android:fillColor="#1A21005D"
+        android:pathData="M 60 48 L 140 48 C 162 48 180 66 180 88 L 180 128 C 180 150 162 168 140 168 L 60 168 C 38 168 20 150 20 128 L 20 88 C 20 66 38 48 60 48 Z" />
+
+    <!-- TV Outer Frame (Primary) -->
     <path
-        android:fillColor="#6200EE"
-        android:pathData="M12,50h84c2,0,2,8,0,8H12C10,58,10,50,12,50z"/>
+        android:fillColor="#6750A4"
+        android:pathData="M 60 40 L 140 40 C 162 40 180 58 180 80 L 180 120 C 180 142 162 160 140 160 L 60 160 C 38 160 20 142 20 120 L 20 80 C 20 58 38 40 60 40 Z" />
+
+    <!-- TV Inner Screen (Darker Primary for depth) -->
+    <path
+        android:fillColor="#4F378B"
+        android:pathData="M 60 52 L 140 52 C 155.4 52 168 64.6 168 80 L 168 120 C 168 135.4 155.4 148 140 148 L 60 148 C 44.6 148 32 135.4 32 120 L 32 80 C 32 64.6 44.6 52 60 52 Z" />
+
+    <!-- The "Stream" Line (Tertiary Container / Coral Pink) -->
+    <path
+        android:strokeColor="#FFD8E4"
+        android:strokeWidth="24"
+        android:strokeLineCap="round"
+        android:pathData="M 32 116 C 80 116 80 76 120 76 C 145 76 155 96 168 96" />
+
+    <!-- Play Button Base Shadow (Simulated) -->
+    <path
+        android:fillColor="#2921005D"
+        android:pathData="M 136 104 C 136 123.8 119.8 140 100 140 C 80.2 140 64 123.8 64 104 C 64 84.2 80.2 68 100 68 C 119.8 68 136 84.2 136 104 Z" />
+
+    <!-- Play Button Base (Primary Container / Soft Purple) -->
+    <path
+        android:fillColor="#EADDFF"
+        android:pathData="M 136 100 C 136 119.8 119.8 136 100 136 C 80.2 136 64 119.8 64 100 C 64 80.2 80.2 64 100 64 C 119.8 64 136 80.2 136 100 Z" />
+
+    <!-- Play Icon (On Primary Container) -->
+    <path
+        android:fillColor="#21005D"
+        android:strokeColor="#21005D"
+        android:strokeWidth="8"
+        android:strokeLineJoin="round"
+        android:pathData="M 94 86 L 94 114 L 116 100 Z" />
 </vector>
