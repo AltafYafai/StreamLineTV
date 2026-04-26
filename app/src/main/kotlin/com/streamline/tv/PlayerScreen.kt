@@ -22,7 +22,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem as Media3Item
 import androidx.media3.common.MimeTypes
@@ -198,24 +197,29 @@ fun PlayerScreen(
                         )
                     }
                     Spacer(Modifier.weight(1f))
-                    // Battery/Time could go here
                 }
 
-                // Center Transport (Nuvio-style large icons)
+                // Center Transport
                 Row(
                     modifier = Modifier.align(Alignment.Center),
                     horizontalArrangement = Arrangement.spacedBy(64.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(
-                        onClick = { exoPlayer.seekTo((exoPlayer.currentPosition - 10000).coerceAtLeast(0)) },
+                        onClick = { 
+                            areControlsVisible = true
+                            exoPlayer.seekTo((exoPlayer.currentPosition - 10000).coerceAtLeast(0)) 
+                        },
                         modifier = Modifier.size(64.dp)
                     ) {
                         Icon(Icons.Default.Replay10, contentDescription = "-10s", tint = Color.White, modifier = Modifier.fillMaxSize())
                     }
 
                     Surface(
-                        onClick = { if (exoPlayer.isPlaying) exoPlayer.pause() else exoPlayer.play() },
+                        onClick = { 
+                            areControlsVisible = true
+                            if (exoPlayer.isPlaying) exoPlayer.pause() else exoPlayer.play() 
+                        },
                         shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.extraLarge),
                         colors = ClickableSurfaceDefaults.colors(
                             containerColor = MaterialTheme.colorScheme.primary,
@@ -235,7 +239,10 @@ fun PlayerScreen(
                     }
 
                     IconButton(
-                        onClick = { exoPlayer.seekTo((exoPlayer.currentPosition + 30000).coerceAtMost(duration)) },
+                        onClick = { 
+                            areControlsVisible = true
+                            exoPlayer.seekTo((exoPlayer.currentPosition + 30000).coerceAtMost(duration)) 
+                        },
                         modifier = Modifier.size(64.dp)
                     ) {
                         Icon(Icons.Default.Forward30, contentDescription = "+30s", tint = Color.White, modifier = Modifier.fillMaxSize())
@@ -249,7 +256,6 @@ fun PlayerScreen(
                         .padding(horizontal = 48.dp, vertical = 48.dp)
                         .align(Alignment.BottomCenter)
                 ) {
-                    // Seek Bar
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(formatTime(currentPosition), color = Color.White, style = MaterialTheme.typography.labelMedium)
                         LinearProgressIndicator(
@@ -336,6 +342,56 @@ fun PlayerScreen(
     }
 }
 
+@Composable
+fun PlayerSettingHeader(title: String) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
+    )
+}
+
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+fun PlayerSelectableChip(label: String, isSelected: Boolean, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.small),
+        colors = ClickableSurfaceDefaults.colors(
+            containerColor = if (isSelected) MaterialTheme.colorScheme.primary else Color.DarkGray,
+            contentColor = if (isSelected) Color.Black else Color.White,
+            focusedContainerColor = Color.White,
+            focusedContentColor = Color.Black
+        ),
+        modifier = Modifier.padding(vertical = 4.dp)
+    ) {
+        Text(label, modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp), style = MaterialTheme.typography.labelLarge)
+    }
+}
+
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+fun PlayerSelectableItem(label: String, isSelected: Boolean, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.medium),
+        colors = ClickableSurfaceDefaults.colors(
+            containerColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) else Color.Transparent,
+            contentColor = if (isSelected) MaterialTheme.colorScheme.primary else Color.White,
+            focusedContainerColor = MaterialTheme.colorScheme.primary,
+            focusedContentColor = Color.Black
+        )
+    ) {
+        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(label, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+            if (isSelected) Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(20.dp))
+        }
+    }
+}
+
+@OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun PlayerActionItem(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, onClick: () -> Unit) {
     Surface(
