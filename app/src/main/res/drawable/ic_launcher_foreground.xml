@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    
+    <!-- TV Frame -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M20,30h68c4,0,8,4,8,8v32c0,4-4,8-8,8H20c-4,0-8-4-8-8V38C12,34,16,30,20,30z"/>
+        
+    <!-- Stream Line -->
+    <path
+        android:fillColor="#6200EE"
+        android:pathData="M12,50h84c2,0,2,8,0,8H12C10,58,10,50,12,50z"/>
+</vector>
