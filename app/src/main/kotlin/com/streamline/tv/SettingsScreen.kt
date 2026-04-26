@@ -62,19 +62,25 @@ fun SettingsScreen(
                     shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.medium),
                     colors = ClickableSurfaceDefaults.colors(
                         containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
-                        contentColor = Color.Black
+                        contentColor = Color.Black,
+                        focusedContainerColor = Color.White,
+                        focusedContentColor = Color.Black
                     )
                 ) {
-                    Row(modifier = Modifier.padding(16.dp), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+                    Row(modifier = Modifier.padding(20.dp), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Storage, contentDescription = null)
-                        Spacer(Modifier.width(8.dp))
-                        Text("Browse Addon Repository", style = MaterialTheme.typography.labelLarge)
+                        Spacer(Modifier.width(12.dp))
+                        Text("Open Addon Browser", style = MaterialTheme.typography.titleMedium)
                     }
                 }
             }
 
             item {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp), 
+                    horizontalArrangement = Arrangement.spacedBy(12.dp), 
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     OutlinedTextField(
                         value = addonUrl,
                         onValueChange = { addonUrl = it },
@@ -88,58 +94,81 @@ fun SettingsScreen(
                             unfocusedBorderColor = Color.DarkGray
                         )
                     )
-                    Button(onClick = { 
-                        if (addonUrl.isNotEmpty()) {
-                            scope.launch {
-                                addonManager.addAddon(addonUrl)
-                                addonUrl = ""
+                    Button(
+                        onClick = { 
+                            if (addonUrl.isNotEmpty()) {
+                                scope.launch {
+                                    addonManager.addAddon(addonUrl)
+                                    addonUrl = ""
+                                }
                             }
-                        }
-                    }) {
+                        },
+                        colors = ButtonDefaults.colors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            contentColor = Color.White,
+                            focusedContainerColor = MaterialTheme.colorScheme.primary,
+                            focusedContentColor = Color.Black
+                        )
+                    ) {
                         Icon(Icons.Default.Add, contentDescription = "Install")
-                        Text("Install")
+                        Text("Add Manual")
                     }
                 }
             }
 
             items(installedAddons.size) { index ->
                 val url = installedAddons[index]
+                // Redesigned Addon Row: Premium list look
                 Surface(
-                    onClick = { 
-                        scope.launch { addonManager.removeAddon(url) }
-                    },
+                    onClick = { /* Detail if needed */ },
                     modifier = Modifier.fillMaxWidth(),
                     shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.medium),
                     colors = ClickableSurfaceDefaults.colors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                        focusedContainerColor = Color.Red.copy(alpha = 0.8f),
-                        contentColor = Color.White,
-                        focusedContentColor = Color.White
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
                     )
                 ) {
                     Row(
-                        modifier = Modifier.padding(12.dp).fillMaxWidth(),
+                        modifier = Modifier.padding(16.dp).fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 text = if (url.startsWith("repo:")) url.removePrefix("repo:") else url,
-                                style = MaterialTheme.typography.bodyMedium,
+                                style = MaterialTheme.typography.titleMedium,
+                                color = Color.White,
                                 maxLines = 1
                             )
                             Text(
-                                text = "Click to Remove", 
+                                text = if (url.startsWith("repo:")) "Community Provider" else "Direct Manifest", 
                                 style = MaterialTheme.typography.labelSmall,
-                                color = Color.LightGray.copy(alpha = 0.7f)
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
                             )
                         }
-                        Icon(Icons.Default.Delete, contentDescription = "Remove")
+
+                        // Seperated focusable Delete button
+                        Button(
+                            onClick = { 
+                                scope.launch { addonManager.removeAddon(url) }
+                            },
+                            colors = ButtonDefaults.colors(
+                                containerColor = Color.Red.copy(alpha = 0.15f),
+                                contentColor = Color.Red,
+                                focusedContainerColor = Color.Red,
+                                focusedContentColor = Color.White
+                            ),
+                            modifier = Modifier.padding(start = 16.dp)
+                        ) {
+                            Icon(Icons.Default.Delete, contentDescription = "Delete", modifier = Modifier.size(20.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text("Delete")
+                        }
                     }
                 }
             }
 
-            item { Spacer(modifier = Modifier.height(16.dp)) }
+            item { Spacer(modifier = Modifier.height(24.dp)) }
 
             item { SettingCategoryHeader("General") }
             item { SettingItem("Language", "English") }

@@ -38,7 +38,7 @@ fun UpdateDialog(
                 latestRelease = release
             }
         } catch (e: Exception) {
-            // Error handling
+            // Silence error
         } finally {
             isChecking = false
         }
@@ -56,39 +56,46 @@ fun UpdateDialog(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.85f)),
+                    .background(Color.Black.copy(alpha = 0.9f)),
                 contentAlignment = Alignment.Center
             ) {
                 Surface(
                     modifier = Modifier
-                        .width(550.dp)
+                        .width(600.dp)
                         .wrapContentHeight(),
                     shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.large),
                     colors = ClickableSurfaceDefaults.colors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                        contentColor = Color.White
+                        contentColor = Color.White,
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant // Keep background stable
                     ),
-                    onClick = {} // To trap focus/clicks
+                    onClick = {} // Trap focus
                 ) {
                     Column(modifier = Modifier.padding(32.dp)) {
                         Text(
-                            text = "New Update: ${latestRelease!!.tag_name}",
-                            style = MaterialTheme.typography.headlineMedium
+                            text = "A New Version is Available",
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "StreamLineTV ${latestRelease!!.tag_name}",
+                            style = MaterialTheme.typography.titleLarge,
+                            color = Color.White
                         )
                         
-                        Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(24.dp))
                         
                         Text(
-                            text = "What's New:",
+                            text = "Release Notes:",
                             style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.primary
+                            color = Color.Gray
                         )
                         
                         Text(
                             text = latestRelease!!.body,
                             style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier
-                                .heightIn(max = 250.dp)
+                                .heightIn(max = 200.dp)
                                 .padding(vertical = 12.dp),
                             color = Color.LightGray
                         )
@@ -99,6 +106,7 @@ fun UpdateDialog(
                             horizontalArrangement = Arrangement.spacedBy(16.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
+                            // Explicit focus colors to avoid 'white' look
                             Button(
                                 onClick = {
                                     val apkAsset = latestRelease!!.assets.firstOrNull { it.name.endsWith(".apk") }
@@ -110,16 +118,30 @@ fun UpdateDialog(
                                     }
                                     onDismiss()
                                 },
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
+                                scale = ButtonDefaults.scale(focusedScale = 1.05f),
+                                colors = ButtonDefaults.colors(
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    contentColor = Color.Black,
+                                    focusedContainerColor = Color.White,
+                                    focusedContentColor = Color.Black
+                                )
                             ) {
-                                Text("Download & Install")
+                                Text("Update Now")
                             }
                             
                             OutlinedButton(
                                 onClick = onDismiss,
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
+                                scale = ButtonDefaults.scale(focusedScale = 1.05f),
+                                colors = ButtonDefaults.colors(
+                                    containerColor = Color.Transparent,
+                                    contentColor = Color.White,
+                                    focusedContainerColor = Color.White.copy(alpha = 0.1f),
+                                    focusedContentColor = Color.White
+                                )
                             ) {
-                                Text("Remind Me Later")
+                                Text("Later")
                             }
                         }
                     }
