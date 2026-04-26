@@ -1,12 +1,16 @@
 package com.streamline.tv
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.tv.material3.*
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -17,6 +21,7 @@ fun UpdateDialog(
     currentVersion: String,
     onDismiss: () -> Unit
 ) {
+    val context = LocalContext.current
     var latestRelease by remember { mutableStateOf<GithubRelease?>(null) }
     var isChecking by remember { mutableStateOf(true) }
 
@@ -33,67 +38,89 @@ fun UpdateDialog(
                 latestRelease = release
             }
         } catch (e: Exception) {
-            // Handle error
+            // Error handling
         } finally {
             isChecking = false
         }
     }
 
     if (latestRelease != null) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.8f)),
-            contentAlignment = Alignment.Center
+        // Use standard Dialog with specific properties to trap focus on TV
+        Dialog(
+            onDismissRequest = onDismiss,
+            properties = DialogProperties(
+                usePlatformDefaultWidth = false,
+                dismissOnBackPress = true,
+                dismissOnClickOutside = false
+            )
         ) {
-            Surface(
+            Box(
                 modifier = Modifier
-                    .width(500.dp)
-                    .wrapContentHeight(),
-                shape = MaterialTheme.shapes.large
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.85f)),
+                contentAlignment = Alignment.Center
             ) {
-                Column(modifier = Modifier.padding(24.dp)) {
-                    Text(
-                        text = "Update Available: ${latestRelease!!.tag_name}",
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = Color.White
+                Surface(
+                    modifier = Modifier
+                        .width(550.dp)
+                        .wrapContentHeight(),
+                    shape = MaterialTheme.shapes.large,
+                    colors = SurfaceDefaults.colors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        contentColor = Color.White
                     )
-                    
-                    Spacer(modifier = Modifier.height(16.dp))
-                    
-                    Text(
-                        text = "Changelog:",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    
-                    Text(
-                        text = latestRelease!!.body,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier
-                            .heightIn(max = 200.dp)
-                            .padding(vertical = 8.dp),
-                        color = Color.White
-                    )
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Button(
-                            onClick = { /* Launch browser */ },
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text("Download")
-                        }
+                ) {
+                    Column(modifier = Modifier.padding(32.dp)) {
+                        Text(
+                            text = "New Update: ${latestRelease!!.tag_name}",
+                            style = MaterialTheme.typography.headlineMedium
+                        )
                         
-                        OutlinedButton(
-                            onClick = onDismiss,
-                            modifier = Modifier.weight(1f)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        Text(
+                            text = "What's New:",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        
+                        Text(
+                            text = latestRelease!!.body,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier
+                                .heightIn(max = 250.dp)
+                                .padding(vertical = 12.dp),
+                            color = Color.LightGray
+                        )
+
+                        Spacer(modifier = Modifier.height(32.dp))
+
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("Later")
+                            Button(
+                                onClick = {
+                                    val apkAsset = latestRelease!!.assets.firstOrNull { it.name.endsWith(".apk") }
+                                    if (apkAsset != null) {
+                                        UpdateDownloader(context).downloadAndInstall(
+                                            apkAsset.browser_download_url,
+                                            "StreamLineTV_${latestRelease!!.tag_name}.apk"
+                                        )
+                                    }
+                                    onDismiss()
+                                },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text("Download & Install")
+                            }
+                            
+                            OutlinedButton(
+                                onClick = onDismiss,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text("Remind Me Later")
+                            }
                         }
                     }
                 }
