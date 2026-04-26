@@ -3,6 +3,7 @@ package com.streamline.tv
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
@@ -86,16 +87,19 @@ fun HomeScreen(
 
 @Composable
 fun FeaturedCarousel(movies: List<MediaItem>, onMediaClick: (MediaItem) -> Unit) {
+    val carouselState = rememberCarouselState()
+    
     Carousel(
         itemCount = movies.size,
+        carouselState = carouselState,
         modifier = Modifier
             .fillMaxWidth()
-            .height(400.dp)
+            .height(450.dp)
             .padding(16.dp),
-        carouselIndicator = { index ->
+        carouselIndicator = {
             CarouselDefaults.IndicatorRow(
                 itemCount = movies.size,
-                activeItemIndex = index,
+                activeItemIndex = carouselState.activeItemIndex,
                 modifier = Modifier
                     .align(androidx.compose.ui.Alignment.BottomEnd)
                     .padding(32.dp)
