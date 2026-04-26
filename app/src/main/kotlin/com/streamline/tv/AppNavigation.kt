@@ -26,6 +26,7 @@ fun AppNavigation(themeManager: ThemeManager) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     var detailMediaItem by remember { mutableStateOf<MediaItem?>(null) }
     var playingMediaItem by remember { mutableStateOf<MediaItem?>(null) }
+    var showUpdateDialog by remember { mutableStateOf(true) }
     
     val navItems = listOf(
         NavItem("Home", Icons.Default.Home),
@@ -34,6 +35,11 @@ fun AppNavigation(themeManager: ThemeManager) {
         NavItem("Library", Icons.Default.Favorite),
         NavItem("Settings", Icons.Default.Settings)
     )
+
+    // Initialize default addons
+    LaunchedEffect(Unit) {
+        addonManager.initializeDefaultAddons()
+    }
 
     // Handle Back Button
     BackHandler(enabled = playingMediaItem != null || detailMediaItem != null) {
@@ -44,72 +50,82 @@ fun AppNavigation(themeManager: ThemeManager) {
         }
     }
 
-    if (playingMediaItem != null) {
-        PlayerScreen(
-            mediaItem = playingMediaItem!!,
-            addonManager = addonManager,
-            repository = repository,
-            libraryManager = libraryManager,
-            onBack = { playingMediaItem = null }
-        )
-    } else if (detailMediaItem != null) {
-        MediaDetailScreen(
-            mediaItem = detailMediaItem!!,
-            addonManager = addonManager,
-            repository = repository,
-            libraryManager = libraryManager,
-            onWatchNow = { playingMediaItem = it },
-            onBack = { detailMediaItem = null }
-        )
-    } else {
-        NavigationDrawer(
-            drawerContent = { _ ->
-                Column(
-                    Modifier
-                        .fillMaxHeight()
-                        .padding(12.dp)
-                        .selectableGroup(),
-                    horizontalAlignment = Alignment.Start,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    navItems.forEachIndexed { index, item ->
-                        NavigationDrawerItem(
-                            selected = selectedTabIndex == index,
-                            onClick = { selectedTabIndex = index },
-                            leadingContent = {
-                                Icon(
-                                    imageVector = item.icon,
-                                    contentDescription = item.title,
-                                    modifier = Modifier.size(24.dp)
+    Box(modifier = Modifier.fillMaxSize()) {
+        if (playingMediaItem != null) {
+            PlayerScreen(
+                mediaItem = playingMediaItem!!,
+                addonManager = addonManager,
+                repository = repository,
+                libraryManager = libraryManager,
+                onBack = { playingMediaItem = null }
+            )
+        } else if (detailMediaItem != null) {
+            MediaDetailScreen(
+                mediaItem = detailMediaItem!!,
+                addonManager = addonManager,
+                repository = repository,
+                libraryManager = libraryManager,
+                onWatchNow = { playingMediaItem = it },
+                onBack = { detailMediaItem = null }
+            )
+        } else {
+            NavigationDrawer(
+                drawerContent = { _ ->
+                    Column(
+                        Modifier
+                            .fillMaxHeight()
+                            .padding(12.dp)
+                            .selectableGroup(),
+                        horizontalAlignment = Alignment.Start,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        navItems.forEachIndexed { index, item ->
+                            NavigationDrawerItem(
+                                selected = selectedTabIndex == index,
+                                onClick = { selectedTabIndex = index },
+                                leadingContent = {
+                                    Icon(
+                                        imageVector = item.icon,
+                                        contentDescription = item.title,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                            ) {
+                                Text(
+                                    text = item.title,
+                                    modifier = Modifier.padding(horizontal = 16.dp)
                                 )
                             }
-                        ) {
-                            Text(
-                                text = item.title,
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                            )
                         }
                     }
                 }
-            }
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(start = 24.dp)
             ) {
-                val onMediaClick: (MediaItem) -> Unit = { item ->
-                    detailMediaItem = item
-                }
-                
-                when (selectedTabIndex) {
-                    0 -> HomeScreen(addonManager, repository, onMediaClick)
-                    1 -> CatalogScreen(addonManager, repository, onMediaClick)
-                    2 -> SearchScreen(addonManager, repository, libraryManager, onMediaClick)
-                    3 -> LibraryScreen(addonManager, repository, libraryManager, onMediaClick)
-                    4 -> SettingsScreen(addonManager, themeManager)
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(start = 24.dp)
+                ) {
+                    val onMediaClick: (MediaItem) -> Unit = { item ->
+                        detailMediaItem = item
+                    }
+                    
+                    when (selectedTabIndex) {
+                        0 -> HomeScreen(addonManager, repository, onMediaClick)
+                        1 -> CatalogScreen(addonManager, repository, onMediaClick)
+                        2 -> SearchScreen(addonManager, repository, libraryManager, onMediaClick)
+                        3 -> LibraryScreen(addonManager, repository, libraryManager, onMediaClick)
+                        4 -> SettingsScreen(addonManager, themeManager)
+                    }
                 }
             }
+        }
+
+        // Show Update Dialog overlay
+        if (showUpdateDialog) {
+            UpdateDialog(
+                currentVersion = "1.0", // This should match your versionName in build.gradle.kts
+                onDismiss = { showUpdateDialog = false }
+            )
         }
     }
 }
