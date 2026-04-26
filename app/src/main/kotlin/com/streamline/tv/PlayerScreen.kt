@@ -1,4 +1,4 @@
-@file:OptIn(ExperimentalTvMaterial3Api::class)
+@file:OptIn(UnstableApi::class, ExperimentalTvMaterial3Api::class)
 package com.streamline.tv
 
 import androidx.compose.animation.*
@@ -24,6 +24,7 @@ import androidx.media3.common.C
 import androidx.media3.common.MediaItem as Media3Item
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackParameters
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.tv.foundation.lazy.list.TvLazyColumn

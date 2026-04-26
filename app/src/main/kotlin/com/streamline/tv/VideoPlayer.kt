@@ -1,3 +1,4 @@
+@file:OptIn(UnstableApi::class)
 package com.streamline.tv
 
 import androidx.annotation.OptIn
@@ -10,7 +11,6 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 
-@OptIn(UnstableApi::class)
 @Composable
 fun VideoPlayer(
     exoPlayer: ExoPlayer,
