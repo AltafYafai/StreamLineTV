@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -23,7 +25,7 @@ fun UpdateDialog(
 ) {
     val context = LocalContext.current
     var latestRelease by remember { mutableStateOf<GithubRelease?>(null) }
-    var isChecking by remember { mutableStateOf(true) }
+    val focusRequester = remember { FocusRequester() }
 
     LaunchedEffect(Unit) {
         try {
@@ -37,11 +39,7 @@ fun UpdateDialog(
             if (release.tag_name != "v$currentVersion") {
                 latestRelease = release
             }
-        } catch (e: Exception) {
-            // Silence error
-        } finally {
-            isChecking = false
-        }
+        } catch (e: Exception) { }
     }
 
     if (latestRelease != null) {
@@ -56,7 +54,7 @@ fun UpdateDialog(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.9f)),
+                    .background(Color.Black.copy(alpha = 0.95f)),
                 contentAlignment = Alignment.Center
             ) {
                 Surface(
@@ -66,27 +64,25 @@ fun UpdateDialog(
                     shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.large),
                     colors = ClickableSurfaceDefaults.colors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                        contentColor = Color.White,
-                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant // Keep background stable
+                        contentColor = Color.White
                     ),
-                    onClick = {} // Trap focus
+                    onClick = {}
                 ) {
                     Column(modifier = Modifier.padding(32.dp)) {
                         Text(
-                            text = "A New Version is Available",
+                            text = "Software Update Available",
                             style = MaterialTheme.typography.headlineMedium,
                             color = MaterialTheme.colorScheme.primary
                         )
                         Text(
-                            text = "StreamLineTV ${latestRelease!!.tag_name}",
-                            style = MaterialTheme.typography.titleLarge,
-                            color = Color.White
+                            text = "New version: ${latestRelease!!.tag_name}",
+                            style = MaterialTheme.typography.titleLarge
                         )
                         
-                        Spacer(modifier = Modifier.height(24.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
                         
                         Text(
-                            text = "Release Notes:",
+                            text = "Changelog:",
                             style = MaterialTheme.typography.labelLarge,
                             color = Color.Gray
                         )
@@ -106,7 +102,6 @@ fun UpdateDialog(
                             horizontalArrangement = Arrangement.spacedBy(16.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            // Explicit focus colors to avoid 'white' look
                             Button(
                                 onClick = {
                                     val apkAsset = latestRelease!!.assets.firstOrNull { it.name.endsWith(".apk") }
@@ -118,34 +113,32 @@ fun UpdateDialog(
                                     }
                                     onDismiss()
                                 },
-                                modifier = Modifier.weight(1f),
-                                scale = ButtonDefaults.scale(focusedScale = 1.05f),
+                                modifier = Modifier.weight(1f).focusRequester(focusRequester),
                                 colors = ButtonDefaults.colors(
-                                    containerColor = MaterialTheme.colorScheme.primary,
-                                    contentColor = Color.Black,
                                     focusedContainerColor = Color.White,
                                     focusedContentColor = Color.Black
                                 )
                             ) {
-                                Text("Update Now")
+                                Text("Download & Install")
                             }
                             
                             OutlinedButton(
                                 onClick = onDismiss,
                                 modifier = Modifier.weight(1f),
-                                scale = ButtonDefaults.scale(focusedScale = 1.05f),
                                 colors = ButtonDefaults.colors(
-                                    containerColor = Color.Transparent,
-                                    contentColor = Color.White,
-                                    focusedContainerColor = Color.White.copy(alpha = 0.1f),
-                                    focusedContentColor = Color.White
+                                    focusedContainerColor = Color.White.copy(alpha = 0.1f)
                                 )
                             ) {
-                                Text("Later")
+                                Text("Dismiss")
                             }
                         }
                     }
                 }
+            }
+            
+            // Force focus to the download button when dialog appears
+            LaunchedEffect(Unit) {
+                focusRequester.requestFocus()
             }
         }
     }

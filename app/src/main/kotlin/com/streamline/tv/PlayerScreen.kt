@@ -39,6 +39,7 @@ import java.util.concurrent.TimeUnit
 @Composable
 fun PlayerScreen(
     mediaItem: MediaItem,
+    selectedStream: AddonStream,
     addonManager: AddonManager,
     repository: StremioRepository,
     libraryManager: LibraryManager,
@@ -46,23 +47,20 @@ fun PlayerScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val installedAddons by addonManager.installedAddons.collectAsState(initial = emptyList())
     
     val exoPlayer = remember { ExoPlayer.Builder(context).build() }
     
-    var videoUrl by remember { mutableStateOf(mediaItem.videoUrl) }
-    var subtitles by remember { mutableStateOf<List<AddonSubtitle>>(emptyList()) }
+    var videoUrl by remember { mutableStateOf(selectedStream.url ?: "") }
+    var subtitles by remember { mutableStateOf(selectedStream.subtitles ?: emptyList()) }
     var isPlaying by remember { mutableStateOf(false) }
     var currentPosition by remember { mutableLongStateOf(0L) }
     var duration by remember { mutableLongStateOf(0L) }
     
-    // UI State
     var areControlsVisible by remember { mutableStateOf(true) }
     var showSettingsMenu by remember { mutableStateOf(false) }
     var playbackSpeed by remember { mutableFloatStateOf(1.0f) }
     var resizeMode by remember { mutableIntStateOf(AspectRatioFrameLayout.RESIZE_MODE_FIT) }
 
-    // Auto-hide timer
     LaunchedEffect(areControlsVisible, isPlaying) {
         if (areControlsVisible && isPlaying && !showSettingsMenu) {
             delay(5000)
@@ -70,20 +68,7 @@ fun PlayerScreen(
         }
     }
 
-    // 1. Resolve Stream & Subtitles
-    LaunchedEffect(mediaItem, installedAddons) {
-        if (videoUrl.isEmpty() && installedAddons.isNotEmpty()) {
-            for (addon in installedAddons) {
-                val streams = repository.fetchStreams(addon, mediaItem.type, mediaItem.id)
-                val bestStream = streams.firstOrNull { it.url != null }
-                if (bestStream != null) {
-                    videoUrl = bestStream.url!!
-                    subtitles = bestStream.subtitles ?: emptyList()
-                    break
-                }
-            }
-        }
-        
+    LaunchedEffect(mediaItem) {
         val savedState = libraryManager.getPlaybackState(mediaItem.id).first()
         if (savedState != null) {
             val parts = savedState.split("|")
@@ -94,7 +79,6 @@ fun PlayerScreen(
         }
     }
 
-    // 2. Initialize Player
     LaunchedEffect(videoUrl, subtitles) {
         if (videoUrl.isNotEmpty()) {
             val media3ItemBuilder = Media3Item.Builder().setUri(videoUrl)
@@ -121,7 +105,6 @@ fun PlayerScreen(
         }
     }
 
-    // Progress Polling
     LaunchedEffect(exoPlayer) {
         while (true) {
             currentPosition = exoPlayer.currentPosition
@@ -146,17 +129,6 @@ fun PlayerScreen(
             modifier = Modifier.fillMaxSize()
         )
 
-        if (videoUrl.isEmpty()) {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Searching for high-quality stream...", color = Color.White, style = MaterialTheme.typography.titleMedium)
-                    Spacer(Modifier.height(16.dp))
-                    Text(mediaItem.title, color = Color.Gray, style = MaterialTheme.typography.bodyLarge)
-                }
-            }
-        }
-
-        // Nuvio-style Cinematic Overlay
         AnimatedVisibility(
             visible = areControlsVisible,
             enter = fadeIn() + expandVertically(),
@@ -171,7 +143,6 @@ fun PlayerScreen(
                         )
                     )
             ) {
-                // Header: Title and Top Bar
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -191,15 +162,13 @@ fun PlayerScreen(
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = mediaItem.metadata, 
+                            text = selectedStream.title ?: mediaItem.metadata, 
                             style = MaterialTheme.typography.bodyMedium, 
                             color = Color.LightGray
                         )
                     }
-                    Spacer(Modifier.weight(1f))
                 }
 
-                // Center Transport
                 Row(
                     modifier = Modifier.align(Alignment.Center),
                     horizontalArrangement = Arrangement.spacedBy(64.dp),
@@ -249,7 +218,6 @@ fun PlayerScreen(
                     }
                 }
 
-                // Footer: Progress and Bottom Options
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -284,7 +252,7 @@ fun PlayerScreen(
                         }
                         
                         if (mediaItem.type == "series") {
-                            Button(onClick = { /* Next Episode */ }) {
+                            Button(onClick = { /* Next logic */ }) {
                                 Icon(Icons.Rounded.SkipNext, contentDescription = null)
                                 Spacer(Modifier.width(8.dp))
                                 Text("Next Episode")
@@ -295,8 +263,8 @@ fun PlayerScreen(
             }
         }
         
-        // Settings Drawer Overhaul
         if (showSettingsMenu) {
+            areControlsVisible = true
             Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)).clickable { showSettingsMenu = false }, contentAlignment = Alignment.CenterEnd) {
                 MaterialSurface(
                     modifier = Modifier.width(400.dp).fillMaxHeight(),
@@ -334,80 +302,10 @@ fun PlayerScreen(
                             }
                         }
                         
-                        item { Spacer(Modifier.height(100.dp)) } // Padding for bottom
+                        item { Spacer(Modifier.height(100.dp)) }
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun PlayerSettingHeader(title: String) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
-    )
-}
-
-@OptIn(ExperimentalTvMaterial3Api::class)
-@Composable
-fun PlayerSelectableChip(label: String, isSelected: Boolean, onClick: () -> Unit) {
-    Surface(
-        onClick = onClick,
-        shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.small),
-        colors = ClickableSurfaceDefaults.colors(
-            containerColor = if (isSelected) MaterialTheme.colorScheme.primary else Color.DarkGray,
-            contentColor = if (isSelected) Color.Black else Color.White,
-            focusedContainerColor = Color.White,
-            focusedContentColor = Color.Black
-        ),
-        modifier = Modifier.padding(vertical = 4.dp)
-    ) {
-        Text(label, modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp), style = MaterialTheme.typography.labelLarge)
-    }
-}
-
-@OptIn(ExperimentalTvMaterial3Api::class)
-@Composable
-fun PlayerSelectableItem(label: String, isSelected: Boolean, onClick: () -> Unit) {
-    Surface(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.medium),
-        colors = ClickableSurfaceDefaults.colors(
-            containerColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) else Color.Transparent,
-            contentColor = if (isSelected) MaterialTheme.colorScheme.primary else Color.White,
-            focusedContainerColor = MaterialTheme.colorScheme.primary,
-            focusedContentColor = Color.Black
-        )
-    ) {
-        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(label, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
-            if (isSelected) Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(20.dp))
-        }
-    }
-}
-
-@OptIn(ExperimentalTvMaterial3Api::class)
-@Composable
-fun PlayerActionItem(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, onClick: () -> Unit) {
-    Surface(
-        onClick = onClick,
-        shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.medium),
-        colors = ClickableSurfaceDefaults.colors(
-            containerColor = Color.White.copy(alpha = 0.05f),
-            contentColor = Color.White,
-            focusedContainerColor = Color.White,
-            focusedContentColor = Color.Black
-        )
-    ) {
-        Row(Modifier.padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp))
-            Spacer(Modifier.width(12.dp))
-            Text(label, style = MaterialTheme.typography.labelLarge)
         }
     }
 }

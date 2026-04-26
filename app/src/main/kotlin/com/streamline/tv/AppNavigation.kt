@@ -26,8 +26,10 @@ fun AppNavigation(themeManager: ThemeManager) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     var detailMediaItem by remember { mutableStateOf<MediaItem?>(null) }
     var playingMediaItem by remember { mutableStateOf<MediaItem?>(null) }
+    var streamToPlay by remember { mutableStateOf<AddonStream?>(null) }
     
     var isAddonBrowserVisible by remember { mutableStateOf(false) }
+    var isSourceSelectionVisible by remember { mutableStateOf(false) }
     var showUpdateDialog by remember { mutableStateOf(false) }
     
     val navItems = listOf(
@@ -39,15 +41,16 @@ fun AppNavigation(themeManager: ThemeManager) {
         NavItem("About", Icons.Default.Info)
     )
 
-    // Initialize default addons
     LaunchedEffect(Unit) {
         addonManager.initializeDefaultAddons()
     }
 
-    // Handle Back Button
-    BackHandler(enabled = playingMediaItem != null || detailMediaItem != null || isAddonBrowserVisible) {
+    BackHandler(enabled = playingMediaItem != null || detailMediaItem != null || isAddonBrowserVisible || isSourceSelectionVisible) {
         if (playingMediaItem != null) {
             playingMediaItem = null
+            streamToPlay = null
+        } else if (isSourceSelectionVisible) {
+            isSourceSelectionVisible = false
         } else if (detailMediaItem != null) {
             detailMediaItem = null
         } else if (isAddonBrowserVisible) {
@@ -56,13 +59,17 @@ fun AppNavigation(themeManager: ThemeManager) {
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        if (playingMediaItem != null) {
+        if (playingMediaItem != null && streamToPlay != null) {
             PlayerScreen(
                 mediaItem = playingMediaItem!!,
+                selectedStream = streamToPlay!!,
                 addonManager = addonManager,
                 repository = repository,
                 libraryManager = libraryManager,
-                onBack = { playingMediaItem = null }
+                onBack = { 
+                    playingMediaItem = null
+                    streamToPlay = null
+                }
             )
         } else if (detailMediaItem != null) {
             MediaDetailScreen(
@@ -70,7 +77,9 @@ fun AppNavigation(themeManager: ThemeManager) {
                 addonManager = addonManager,
                 repository = repository,
                 libraryManager = libraryManager,
-                onWatchNow = { playingMediaItem = it },
+                onWatchNow = { 
+                    isSourceSelectionVisible = true 
+                },
                 onBack = { detailMediaItem = null }
             )
         } else if (isAddonBrowserVisible) {
@@ -137,10 +146,23 @@ fun AppNavigation(themeManager: ThemeManager) {
             }
         }
 
-        // Show Update Dialog overlay
+        if (isSourceSelectionVisible && detailMediaItem != null) {
+            SourceSelectionDialog(
+                mediaItem = detailMediaItem!!,
+                addonManager = addonManager,
+                repository = repository,
+                onSourceSelected = { stream ->
+                    streamToPlay = stream
+                    playingMediaItem = detailMediaItem
+                    isSourceSelectionVisible = false
+                },
+                onDismiss = { isSourceSelectionVisible = false }
+            )
+        }
+
         if (showUpdateDialog) {
             UpdateDialog(
-                currentVersion = "1.0.4",
+                currentVersion = "1.0.7",
                 onDismiss = { showUpdateDialog = false }
             )
         }
