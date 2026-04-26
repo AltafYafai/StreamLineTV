@@ -1,3 +1,4 @@
+@file:OptIn(ExperimentalTvMaterial3Api::class)
 package com.streamline.tv
 
 import android.content.Context
@@ -15,7 +16,6 @@ import androidx.tv.material3.*
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-@OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun UpdateDialog(
     currentVersion: String,
@@ -45,7 +45,6 @@ fun UpdateDialog(
     }
 
     if (latestRelease != null) {
-        // Use standard Dialog with specific properties to trap focus on TV
         Dialog(
             onDismissRequest = onDismiss,
             properties = DialogProperties(
@@ -64,11 +63,12 @@ fun UpdateDialog(
                     modifier = Modifier
                         .width(550.dp)
                         .wrapContentHeight(),
-                    shape = MaterialTheme.shapes.large,
-                    colors = SurfaceDefaults.colors(
+                    shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.large),
+                    colors = ClickableSurfaceDefaults.colors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant,
                         contentColor = Color.White
-                    )
+                    ),
+                    onClick = {} // To trap focus/clicks
                 ) {
                     Column(modifier = Modifier.padding(32.dp)) {
                         Text(
