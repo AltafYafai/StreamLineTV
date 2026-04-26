@@ -55,7 +55,8 @@ fun AddonBrowserScreen(
             Text(
                 text = "Addon Repository",
                 style = MaterialTheme.typography.displayMedium,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                color = Color.White
             )
             Button(onClick = onBack) {
                 Text("Back")
@@ -64,7 +65,7 @@ fun AddonBrowserScreen(
 
         if (isLoading) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("Loading Repository...", style = MaterialTheme.typography.headlineMedium)
+                Text("Loading Repository...", style = MaterialTheme.typography.headlineMedium, color = Color.White)
             }
         } else if (repoData != null) {
             TvLazyVerticalGrid(
@@ -75,16 +76,17 @@ fun AddonBrowserScreen(
             ) {
                 items(repoData!!.scrapers.size) { index ->
                     val scraper = repoData!!.scrapers[index]
-                    val isInstalled = installedAddons.any { it.contains(scraper.id) }
+                    // Use a consistent ID format for checking installation
+                    val addonKey = "repo:${scraper.id}"
+                    val isInstalled = installedAddons.contains(addonKey)
                     
                     FocusableCard(
                         onClick = {
                             scope.launch {
                                 if (isInstalled) {
-                                    // Remove logic could be more complex, but for now:
-                                    addonManager.removeAddon(scraper.id)
+                                    addonManager.removeAddon(addonKey)
                                 } else {
-                                    addonManager.addAddon("https://example.com/addon/${scraper.id}") // Placeholder URL
+                                    addonManager.addAddon(addonKey)
                                 }
                             }
                         }
@@ -93,12 +95,13 @@ fun AddonBrowserScreen(
                             AsyncImage(
                                 model = scraper.logo,
                                 contentDescription = scraper.name,
-                                modifier = Modifier.size(48.dp).align(Alignment.CenterHorizontally),
+                                modifier = Modifier.size(64.dp).align(Alignment.CenterHorizontally),
                                 contentScale = ContentScale.Fit
                             )
                             Text(
                                 text = scraper.name,
                                 style = MaterialTheme.typography.titleMedium,
+                                color = Color.White,
                                 modifier = Modifier.padding(top = 8.dp)
                             )
                             Text(
@@ -107,12 +110,21 @@ fun AddonBrowserScreen(
                                 color = Color.LightGray,
                                 maxLines = 2
                             )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = if (isInstalled) "INSTALLED" else "INSTALL",
-                                style = MaterialTheme.typography.labelLarge,
-                                color = if (isInstalled) MaterialTheme.colorScheme.primary else Color.White
-                            )
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Surface(
+                                onClick = { /* No-op, parent handles click */ },
+                                shape = MaterialTheme.shapes.extraSmall,
+                                colors = ClickableSurfaceDefaults.colors(
+                                    containerColor = if (isInstalled) Color.Red.copy(alpha = 0.2f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                                    contentColor = if (isInstalled) Color.Red else MaterialTheme.colorScheme.primary
+                                )
+                            ) {
+                                Text(
+                                    text = if (isInstalled) "UNINSTALL" else "INSTALL",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                )
+                            }
                         }
                     }
                 }

@@ -2,16 +2,14 @@ package com.streamline.tv
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Storage
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -56,7 +54,7 @@ fun SettingsScreen(
 
             item { Spacer(modifier = Modifier.height(16.dp)) }
 
-            item { SettingCategoryHeader("Addons") }
+            item { SettingCategoryHeader("Addons & Providers") }
             
             item {
                 Surface(
@@ -68,7 +66,7 @@ fun SettingsScreen(
                         contentColor = Color.Black
                     )
                 ) {
-                    Row(modifier = Modifier.padding(16.dp), horizontalArrangement = Arrangement.Center) {
+                    Row(modifier = Modifier.padding(16.dp), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Storage, contentDescription = null)
                         Spacer(Modifier.width(8.dp))
                         Text("Browse Addon Repository", style = MaterialTheme.typography.labelLarge)
@@ -77,12 +75,12 @@ fun SettingsScreen(
             }
 
             item {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                     OutlinedTextField(
                         value = addonUrl,
                         onValueChange = { addonUrl = it },
                         modifier = Modifier.weight(1f),
-                        placeholder = { Text("Enter Addon URL (HTTPS)", color = Color.Gray) },
+                        placeholder = { Text("Enter Addon URL or JSON manifest URL", color = Color.Gray) },
                         singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedTextColor = Color.White,
@@ -107,8 +105,9 @@ fun SettingsScreen(
 
             items(installedAddons.size) { index ->
                 val url = installedAddons[index]
+                // Each item is a focusable Row to make it easy to reach the delete button
                 Surface(
-                    onClick = { },
+                    onClick = { /* Could open addon details */ },
                     modifier = Modifier.fillMaxWidth(),
                     shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.medium),
                     colors = ClickableSurfaceDefaults.colors(
@@ -116,17 +115,40 @@ fun SettingsScreen(
                     )
                 ) {
                     Row(
-                        modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                        modifier = Modifier.padding(12.dp).fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = url, style = MaterialTheme.typography.bodyMedium, color = Color.White)
-                        IconButton(onClick = { 
-                            scope.launch {
-                                addonManager.removeAddon(url)
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = if (url.startsWith("repo:")) url.removePrefix("repo:") else url,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.White,
+                                maxLines = 1
+                            )
+                            if (url.startsWith("repo:")) {
+                                Text("Nuvio Provider", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
                             }
-                        }) {
-                            Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.Red)
+                        }
+
+                        // Explicit focusable Delete button
+                        Button(
+                            onClick = { 
+                                scope.launch {
+                                    addonManager.removeAddon(url)
+                                }
+                            },
+                            colors = ButtonDefaults.colors(
+                                containerColor = Color.Red.copy(alpha = 0.2f),
+                                contentColor = Color.Red,
+                                focusedContainerColor = Color.Red,
+                                focusedContentColor = Color.White
+                            ),
+                            scale = ButtonDefaults.scale(focusedScale = 1.1f)
+                        ) {
+                            Icon(Icons.Default.Delete, contentDescription = "Delete")
+                            Spacer(Modifier.width(4.dp))
+                            Text("Remove")
                         }
                     }
                 }
@@ -158,7 +180,7 @@ fun SettingsScreen(
                     Row(
                         modifier = Modifier.padding(16.dp).fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
                             Text(text = "Check for Updates", style = MaterialTheme.typography.titleMedium, color = Color.White)
@@ -168,87 +190,9 @@ fun SettingsScreen(
                     }
                 }
             }
-            item { SettingItem("Version", "1.0.0-beta") }
+            item { SettingItem("Version", "1.0.1-beta") }
             item { SettingItem("License", "GPL v3.0") }
         }
     }
 }
-
-@OptIn(ExperimentalTvMaterial3Api::class)
-@Composable
-fun ThemeButton(name: String, isSelected: Boolean, onClick: () -> Unit) {
-    Surface(
-        onClick = onClick,
-        modifier = Modifier.width(120.dp),
-        shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.medium),
-        colors = ClickableSurfaceDefaults.colors(
-            containerColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-            contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
-        )
-    ) {
-        Box(modifier = Modifier.padding(12.dp), contentAlignment = androidx.compose.ui.Alignment.Center) {
-            Text(text = name, style = MaterialTheme.typography.labelLarge)
-        }
-    }
-}
-
-@OptIn(ExperimentalTvMaterial3Api::class)
-@Composable
-fun SettingCategoryHeader(title: String) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(vertical = 8.dp)
-    )
-}
-
-@OptIn(ExperimentalTvMaterial3Api::class)
-@Composable
-fun SettingItem(title: String, subtitle: String) {
-    Surface(
-        onClick = { /* Handle click */ },
-        modifier = Modifier.fillMaxWidth(),
-        shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.medium),
-        colors = ClickableSurfaceDefaults.colors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        )
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = title, style = MaterialTheme.typography.titleMedium, color = Color.White)
-            Text(
-                text = subtitle, 
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.LightGray
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalTvMaterial3Api::class)
-@Composable
-fun SettingToggle(title: String, initialValue: Boolean) {
-    var checked by remember { mutableStateOf(initialValue) }
-    
-    Surface(
-        onClick = { checked = !checked },
-        modifier = Modifier.fillMaxWidth(),
-        shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.medium),
-        colors = ClickableSurfaceDefaults.colors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        )
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp).fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-        ) {
-            Text(text = title, style = MaterialTheme.typography.titleMedium, color = Color.White)
-            Text(
-                text = if (checked) "ON" else "OFF",
-                color = if (checked) MaterialTheme.colorScheme.primary else Color.Gray,
-                style = MaterialTheme.typography.labelLarge
-            )
-        }
-    }
-}
+// (ThemeButton, SettingCategoryHeader, SettingItem, SettingToggle below...)
