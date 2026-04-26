@@ -2,6 +2,7 @@ package com.streamline.tv
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
@@ -48,6 +49,7 @@ fun AppNavigation(themeManager: ThemeManager) {
             mediaItem = playingMediaItem!!,
             addonManager = addonManager,
             repository = repository,
+            libraryManager = libraryManager,
             onBack = { playingMediaItem = null }
         )
     } else if (detailMediaItem != null) {

@@ -28,7 +28,6 @@ fun LibraryScreen(
             isLoading = true
             val items = mutableListOf<MediaItem>()
             for (id in watchlistIds) {
-                // Try to fetch detail from the first addon (simplification)
                 val detail = repository.fetchMediaDetail(installedAddons.first(), "movie", id)
                     ?: repository.fetchMediaDetail(installedAddons.first(), "series", id)
                 if (detail != null) {
@@ -63,7 +62,7 @@ fun LibraryScreen(
                 horizontalArrangement = Arrangement.spacedBy(24.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp),
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 16.dp, bottom = 32.dp)
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 32.dp)
             ) {
                 items(watchlistItems.size) { index ->
                     CatalogItemCard(movie = watchlistItems[index], onMediaClick = onMediaClick)

@@ -6,6 +6,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,7 +28,8 @@ fun SettingsScreen(addonManager: AddonManager, themeManager: ThemeManager) {
         Text(
             text = "Settings",
             style = MaterialTheme.typography.displayMedium,
-            modifier = Modifier.padding(bottom = 24.dp)
+            modifier = Modifier.padding(bottom = 24.dp),
+            color = Color.White
         )
 
         TvLazyColumn(
@@ -91,7 +94,7 @@ fun SettingsScreen(addonManager: AddonManager, themeManager: ThemeManager) {
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                     ) {
-                        Text(text = url, style = MaterialTheme.typography.bodyMedium)
+                        Text(text = url, style = MaterialTheme.typography.bodyMedium, color = Color.White)
                         IconButton(onClick = { 
                             scope.launch {
                                 addonManager.removeAddon(url)
@@ -164,7 +167,7 @@ fun SettingItem(title: String, subtitle: String) {
         )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = title, style = MaterialTheme.typography.titleMedium)
+            Text(text = title, style = MaterialTheme.typography.titleMedium, color = Color.White)
             Text(
                 text = subtitle, 
                 style = MaterialTheme.typography.bodySmall,
@@ -192,7 +195,7 @@ fun SettingToggle(title: String, initialValue: Boolean) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
         ) {
-            Text(text = title, style = MaterialTheme.typography.titleMedium)
+            Text(text = title, style = MaterialTheme.typography.titleMedium, color = Color.White)
             Text(
                 text = if (checked) "ON" else "OFF",
                 color = if (checked) MaterialTheme.colorScheme.primary else Color.Gray,

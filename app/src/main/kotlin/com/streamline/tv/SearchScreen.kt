@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -42,7 +43,6 @@ fun SearchScreen(
         if (installedAddons.isNotEmpty()) {
             val results = mutableListOf<MediaItem>()
             for (addon in installedAddons) {
-                // In a full impl, we'd use service.getCatalogWithExtra(selectedType, ...)
                 results.addAll(repository.searchMedia(addon, searchQuery)) 
             }
             filteredMovies = results.distinctBy { it.id }.filter { it.type == selectedType }
@@ -83,7 +83,7 @@ fun SearchScreen(
             TvLazyRow(modifier = Modifier.padding(vertical = 16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 items(searchHistory.size) { index ->
                     ActionChip(onClick = { searchQuery = searchHistory[index] }) {
-                        Text(searchHistory[index], modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+                        Text(searchHistory[index], modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp), color = Color.White)
                     }
                 }
             }
@@ -97,7 +97,7 @@ fun SearchScreen(
                 horizontalArrangement = Arrangement.spacedBy(24.dp),
                 verticalArrangement = Arrangement.spacedBy(24.dp),
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 16.dp, bottom = 32.dp)
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 32.dp)
             ) {
                 items(filteredMovies.size) { index ->
                     CatalogItemCard(movie = filteredMovies[index], onMediaClick = onMediaClick)
@@ -118,6 +118,22 @@ fun FilterChip(label: String, isSelected: Boolean, onClick: () -> Unit) {
             contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
         )
     ) {
-        Text(label, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
+        Text(label, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp), color = if (isSelected) Color.Black else Color.White)
+    }
+}
+
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+fun ActionChip(onClick: () -> Unit, content: @Composable () -> Unit) {
+    Surface(
+        onClick = onClick,
+        shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.extraLarge),
+        colors = ClickableSurfaceDefaults.colors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            focusedContainerColor = MaterialTheme.colorScheme.primary,
+            focusedContentColor = MaterialTheme.colorScheme.onPrimary
+        )
+    ) {
+        content()
     }
 }

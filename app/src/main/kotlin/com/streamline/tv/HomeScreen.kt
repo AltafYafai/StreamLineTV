@@ -31,7 +31,6 @@ fun HomeScreen(
             isLoading = true
             val rows = mutableListOf<HomeRow>()
             
-            // For each addon, try to fetch its movie catalogs
             for (addonUrl in installedAddons) {
                 val manifest = repository.fetchManifest(addonUrl)
                 manifest?.catalogs?.filter { it.type == "movie" }?.forEach { catalog ->
@@ -48,7 +47,6 @@ fun HomeScreen(
             if (rows.isNotEmpty()) {
                 homeRows = rows
             } else {
-                // Fallback if no data found in addons
                 homeRows = listOf(HomeRow("Sample Movies", SampleData.movies))
             }
             isLoading = false
@@ -63,7 +61,6 @@ fun HomeScreen(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(bottom = 32.dp)
     ) {
-        // Featured Content (Hero Section)
         if (featuredMovie != null) {
             item {
                 FeaturedSection(featuredMovie, onMediaClick)
@@ -77,7 +74,6 @@ fun HomeScreen(
                 }
             }
         } else {
-            // Dynamic Rows from Addons
             items(homeRows.size) { index ->
                 val row = homeRows[index]
                 ContentRow(
@@ -99,7 +95,7 @@ fun FeaturedSection(movie: MediaItem, onMediaClick: (MediaItem) -> Unit) {
             .fillMaxWidth()
             .height(400.dp)
             .padding(16.dp),
-        shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.large)
+        shape = MaterialTheme.shapes.large
     ) {
         AsyncImage(
             model = movie.bannerUrl,
@@ -138,10 +134,10 @@ fun ContentRow(title: String, movies: List<MediaItem>, onMediaClick: (MediaItem)
         Text(
             text = title,
             style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(start = 32.dp, bottom = 8.dp)
+            modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
         )
         TvLazyRow(
-            contentPadding = PaddingValues(horizontal = 32.dp),
+            contentPadding = PaddingValues(start = 32.dp, end = 32.dp),
             horizontalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             items(movies.size) { index ->

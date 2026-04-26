@@ -1,12 +1,15 @@
 package com.streamline.tv
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.unit.dp
 import androidx.tv.material3.*
 
 @OptIn(ExperimentalTvMaterial3Api::class)
@@ -14,7 +17,7 @@ import androidx.tv.material3.*
 fun FocusableCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    shape: Shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.medium),
+    shape: Shape = MaterialTheme.shapes.medium,
     content: @Composable BoxScope.() -> Unit
 ) {
     var isFocused by remember { mutableStateOf(false) }
@@ -25,7 +28,7 @@ fun FocusableCard(
         modifier = modifier
             .onFocusChanged { isFocused = it.isFocused }
             .scale(scale),
-        shape = shape,
+        shape = ClickableSurfaceDefaults.shape(shape),
         border = ClickableSurfaceDefaults.border(
             focusedBorder = Border(
                 BorderStroke(2.dp, MaterialTheme.colorScheme.border),
@@ -35,7 +38,7 @@ fun FocusableCard(
         glow = ClickableSurfaceDefaults.glow(
             focusedGlow = Glow(
                 elevation = 8.dp,
-                elevationColor = MaterialTheme.colorScheme.shadow
+                elevationColor = Color.Black.copy(alpha = 0.5f)
             )
         )
     ) {
