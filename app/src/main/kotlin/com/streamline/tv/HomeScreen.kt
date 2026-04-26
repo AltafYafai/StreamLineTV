@@ -92,10 +92,10 @@ fun FeaturedCarousel(movies: List<MediaItem>, onMediaClick: (MediaItem) -> Unit)
             .fillMaxWidth()
             .height(400.dp)
             .padding(16.dp),
-        carouselIndicator = {
+        carouselIndicator = { index ->
             CarouselDefaults.IndicatorRow(
                 itemCount = movies.size,
-                activeItemIndex = it,
+                activeItemIndex = index,
                 modifier = Modifier
                     .align(androidx.compose.ui.Alignment.BottomEnd)
                     .padding(32.dp)
@@ -104,10 +104,9 @@ fun FeaturedCarousel(movies: List<MediaItem>, onMediaClick: (MediaItem) -> Unit)
     ) { index ->
         val movie = movies[index]
         
-        // Use a Surface for the background to handle focus/click correctly
         Surface(
             onClick = { onMediaClick(movie) },
-            scale = ClickableSurfaceDefaults.scale(focusedScale = 1.0f), // No zoom on carousel items
+            scale = ClickableSurfaceDefaults.scale(focusedScale = 1.0f),
             modifier = Modifier.fillMaxSize(),
             shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.large)
         ) {
