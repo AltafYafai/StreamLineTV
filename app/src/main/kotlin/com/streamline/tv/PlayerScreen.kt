@@ -8,6 +8,8 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.rounded.SkipNext
+import androidx.compose.material.icons.rounded.Subtitles
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -54,13 +56,11 @@ fun PlayerScreen(
     var currentPosition by remember { mutableLongStateOf(0L) }
     var duration by remember { mutableLongStateOf(0L) }
     
-    // UI State
     var areControlsVisible by remember { mutableStateOf(true) }
     var showSettingsMenu by remember { mutableStateOf(false) }
     var playbackSpeed by remember { mutableFloatStateOf(1.0f) }
     var resizeMode by remember { mutableIntStateOf(AspectRatioFrameLayout.RESIZE_MODE_FIT) }
 
-    // Auto-hide timer
     LaunchedEffect(areControlsVisible, isPlaying) {
         if (areControlsVisible && isPlaying && !showSettingsMenu) {
             delay(5000)
@@ -68,7 +68,6 @@ fun PlayerScreen(
         }
     }
 
-    // 1. Resolve Stream & Subtitles
     LaunchedEffect(mediaItem, installedAddons) {
         if (videoUrl.isEmpty() && installedAddons.isNotEmpty()) {
             for (addon in installedAddons) {
@@ -92,7 +91,6 @@ fun PlayerScreen(
         }
     }
 
-    // 2. Initialize Player
     LaunchedEffect(videoUrl, subtitles) {
         if (videoUrl.isNotEmpty()) {
             val media3ItemBuilder = Media3Item.Builder().setUri(videoUrl)
@@ -119,7 +117,6 @@ fun PlayerScreen(
         }
     }
 
-    // Progress Polling
     LaunchedEffect(exoPlayer) {
         while (true) {
             currentPosition = exoPlayer.currentPosition
@@ -150,13 +147,12 @@ fun PlayerScreen(
             }
         }
 
-        // Playback Controls Overlay
         AnimatedVisibility(
             visible = areControlsVisible,
             enter = fadeIn() + slideInVertically { it / 2 },
             exit = fadeOut() + slideOutVertically { it / 2 }
         ) {
-            Column(
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(
@@ -165,86 +161,99 @@ fun PlayerScreen(
                             startY = 500f
                         )
                     )
-                    .padding(48.dp),
-                verticalArrangement = Arrangement.Bottom
             ) {
-                Text(text = mediaItem.title, style = MaterialTheme.typography.displaySmall, color = Color.White)
-                Text(text = mediaItem.metadata, style = MaterialTheme.typography.bodyLarge, color = Color.LightGray, modifier = Modifier.padding(bottom = 24.dp))
-
-                // Seek Bar
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(formatTime(currentPosition), color = Color.White)
-                    LinearProgressIndicator(
-                        progress = if (duration > 0) currentPosition.toFloat() / duration else 0f,
-                        modifier = Modifier.weight(1f).padding(horizontal = 16.dp).height(8.dp),
-                        color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
-                        trackColor = Color.DarkGray
-                    )
-                    Text(formatTime(duration), color = Color.White)
+                // Top Metadata
+                Column(Modifier.padding(48.dp).align(Alignment.TopStart)) {
+                    Text(text = mediaItem.title, style = MaterialTheme.typography.displaySmall, color = Color.White)
+                    Text(text = mediaItem.metadata, style = MaterialTheme.typography.bodyLarge, color = Color.LightGray)
                 }
 
-                // Transport Controls
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(top = 24.dp),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
+                // Bottom Controls
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(48.dp)
+                        .align(Alignment.BottomCenter)
                 ) {
-                    IconButton(onClick = { 
-                        areControlsVisible = true
-                        exoPlayer.seekTo((exoPlayer.currentPosition - 10000).coerceAtLeast(0)) 
-                    }) {
-                        Icon(Icons.Default.FastRewind, contentDescription = "Rewind", tint = Color.White)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(formatTime(currentPosition), color = Color.White, style = MaterialTheme.typography.labelMedium)
+                        LinearProgressIndicator(
+                            progress = if (duration > 0) currentPosition.toFloat() / duration else 0f,
+                            modifier = Modifier.weight(1f).padding(horizontal = 16.dp).height(8.dp),
+                            color = MaterialTheme.colorScheme.primary,
+                            trackColor = Color.DarkGray
+                        )
+                        Text(formatTime(duration), color = Color.White, style = MaterialTheme.typography.labelMedium)
                     }
-                    
-                    Spacer(modifier = Modifier.width(24.dp))
 
-                    Surface(
-                        onClick = { 
-                            areControlsVisible = true
-                            if (exoPlayer.isPlaying) exoPlayer.pause() else exoPlayer.play() 
-                        },
-                        shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.extraLarge),
-                        colors = ClickableSurfaceDefaults.colors(containerColor = MaterialTheme.colorScheme.primary, contentColor = Color.Black),
-                        modifier = Modifier.size(64.dp)
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(top = 24.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow, contentDescription = "Play/Pause", modifier = Modifier.size(40.dp))
+                        IconButton(onClick = { 
+                            areControlsVisible = true
+                            exoPlayer.seekTo((exoPlayer.currentPosition - 10000).coerceAtLeast(0)) 
+                        }) {
+                            Icon(Icons.Default.Replay10, contentDescription = "-10s", tint = Color.White, modifier = Modifier.size(32.dp))
                         }
-                    }
+                        
+                        Spacer(modifier = Modifier.width(32.dp))
 
-                    Spacer(modifier = Modifier.width(24.dp))
+                        Surface(
+                            onClick = { 
+                                areControlsVisible = true
+                                if (exoPlayer.isPlaying) exoPlayer.pause() else exoPlayer.play() 
+                            },
+                            shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.extraLarge),
+                            colors = ClickableSurfaceDefaults.colors(containerColor = MaterialTheme.colorScheme.primary, contentColor = Color.Black),
+                            modifier = Modifier.size(72.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow, contentDescription = "Play/Pause", modifier = Modifier.size(48.dp))
+                            }
+                        }
 
-                    IconButton(onClick = { 
-                        areControlsVisible = true
-                        exoPlayer.seekTo((exoPlayer.currentPosition + 30000).coerceAtMost(duration)) 
-                    }) {
-                        Icon(Icons.Default.FastForward, contentDescription = "Fast Forward", tint = Color.White)
-                    }
-                    
-                    Spacer(modifier = Modifier.width(48.dp))
-                    
-                    IconButton(onClick = { showSettingsMenu = true }) {
-                        Icon(Icons.Default.Settings, contentDescription = "Playback Settings", tint = Color.White)
+                        Spacer(modifier = Modifier.width(32.dp))
+
+                        IconButton(onClick = { 
+                            areControlsVisible = true
+                            exoPlayer.seekTo((exoPlayer.currentPosition + 30000).coerceAtMost(duration)) 
+                        }) {
+                            Icon(Icons.Default.Forward30, contentDescription = "+30s", tint = Color.White, modifier = Modifier.size(32.dp))
+                        }
+                        
+                        if (mediaItem.type == "series") {
+                            Spacer(modifier = Modifier.width(48.dp))
+                            IconButton(onClick = { /* Next logic */ }) {
+                                Icon(Icons.Rounded.SkipNext, contentDescription = "Next Episode", tint = Color.White, modifier = Modifier.size(32.dp))
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.weight(1f))
+                        
+                        IconButton(onClick = { showSettingsMenu = true }) {
+                            Icon(Icons.Default.Settings, contentDescription = "Settings", tint = Color.White, modifier = Modifier.size(32.dp))
+                        }
                     }
                 }
             }
         }
         
-        // Comprehensive Settings Menu
         if (showSettingsMenu) {
             areControlsVisible = true
             Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)).clickable { showSettingsMenu = false }, contentAlignment = Alignment.CenterEnd) {
                 MaterialSurface(
-                    modifier = Modifier.width(350.dp).fillMaxHeight(),
+                    modifier = Modifier.width(380.dp).fillMaxHeight(),
                     color = androidx.compose.material3.MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     TvLazyColumn(Modifier.padding(24.dp)) {
-                        item { Text("Playback Settings", style = MaterialTheme.typography.headlineSmall, color = Color.White) }
+                        item { Text("Playback Customization", style = MaterialTheme.typography.headlineSmall, color = Color.White) }
                         
-                        item { SettingHeader("Speed") }
+                        item { SettingHeader("Playback Speed") }
                         item {
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                listOf(0.5f, 1.0f, 1.5f, 2.0f).forEach { speed ->
+                                listOf(0.5f, 1.0f, 1.25f, 1.5f, 2.0f).forEach { speed ->
                                     PlayerSelectableChip(label = "${speed}x", isSelected = playbackSpeed == speed) {
                                         playbackSpeed = speed
                                         exoPlayer.playbackParameters = PlaybackParameters(speed)
@@ -253,17 +262,17 @@ fun PlayerScreen(
                             }
                         }
 
-                        item { SettingHeader("Resize Mode") }
+                        item { SettingHeader("Video Scaling") }
                         item {
                             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                PlayerSelectableItem("Fit", resizeMode == AspectRatioFrameLayout.RESIZE_MODE_FIT) { resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT }
-                                PlayerSelectableItem("Zoom", resizeMode == AspectRatioFrameLayout.RESIZE_MODE_ZOOM) { resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM }
-                                PlayerSelectableItem("Fill", resizeMode == AspectRatioFrameLayout.RESIZE_MODE_FILL) { resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL }
+                                PlayerSelectableItem("Original (Fit)", resizeMode == AspectRatioFrameLayout.RESIZE_MODE_FIT) { resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT }
+                                PlayerSelectableItem("Zoom to Fill", resizeMode == AspectRatioFrameLayout.RESIZE_MODE_ZOOM) { resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM }
+                                PlayerSelectableItem("Stretched", resizeMode == AspectRatioFrameLayout.RESIZE_MODE_FILL) { resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL }
                             }
                         }
 
                         if (subtitles.isNotEmpty()) {
-                            item { SettingHeader("Subtitles") }
+                            item { SettingHeader("Subtitles / Captions") }
                             items(subtitles.size) { index ->
                                 val sub = subtitles[index]
                                 PlayerSelectableItem(sub.lang, false) { /* track toggle */ }
@@ -297,7 +306,7 @@ fun PlayerSelectableChip(label: String, isSelected: Boolean, onClick: () -> Unit
         ),
         modifier = Modifier.padding(vertical = 4.dp)
     ) {
-        Text(label, modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp))
+        Text(label, modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp), style = MaterialTheme.typography.labelLarge)
     }
 }
 
@@ -312,9 +321,9 @@ fun PlayerSelectableItem(label: String, isSelected: Boolean, onClick: () -> Unit
             contentColor = if (isSelected) MaterialTheme.colorScheme.primary else Color.White
         )
     ) {
-        Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(label, modifier = Modifier.weight(1f))
-            if (isSelected) Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp))
+        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(label, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+            if (isSelected) Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(20.dp))
         }
     }
 }

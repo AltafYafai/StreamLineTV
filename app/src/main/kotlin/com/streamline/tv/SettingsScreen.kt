@@ -104,16 +104,22 @@ fun SettingsScreen(
 
             items(installedAddons.size) { index ->
                 val url = installedAddons[index]
+                // Improved deletion visibility: Single focusable item with primary action = Remove
                 Surface(
-                    onClick = { },
+                    onClick = { 
+                        scope.launch { addonManager.removeAddon(url) }
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.medium),
                     colors = ClickableSurfaceDefaults.colors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                        focusedContainerColor = Color.Red.copy(alpha = 0.8f),
+                        contentColor = Color.White,
+                        focusedContentColor = Color.White
                     )
                 ) {
                     Row(
-                        modifier = Modifier.padding(12.dp).fillMaxWidth(),
+                        modifier = Modifier.padding(16.dp).fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -121,31 +127,15 @@ fun SettingsScreen(
                             Text(
                                 text = if (url.startsWith("repo:")) url.removePrefix("repo:") else url,
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = Color.White,
                                 maxLines = 1
                             )
-                            if (url.startsWith("repo:")) {
-                                Text("Nuvio Provider", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
-                            }
-                        }
-
-                        Button(
-                            onClick = { 
-                                scope.launch {
-                                    addonManager.removeAddon(url)
-                                }
-                            },
-                            colors = ButtonDefaults.colors(
-                                containerColor = Color.Red.copy(alpha = 0.2f),
-                                contentColor = Color.Red,
-                                focusedContainerColor = Color.Red,
-                                focusedContentColor = Color.White
+                            Text(
+                                text = "Click to Remove", 
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color.LightGray.copy(alpha = 0.7f)
                             )
-                        ) {
-                            Icon(Icons.Default.Delete, contentDescription = "Delete")
-                            Spacer(Modifier.width(4.dp))
-                            Text("Remove")
                         }
+                        Icon(Icons.Default.Delete, contentDescription = "Remove")
                     }
                 }
             }
@@ -163,78 +153,4 @@ fun SettingsScreen(
         }
     }
 }
-
-@Composable
-fun ThemeButton(name: String, isSelected: Boolean, onClick: () -> Unit) {
-    Surface(
-        onClick = onClick,
-        modifier = Modifier.width(120.dp),
-        shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.medium),
-        colors = ClickableSurfaceDefaults.colors(
-            containerColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-            contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
-        )
-    ) {
-        Box(modifier = Modifier.padding(12.dp), contentAlignment = androidx.compose.ui.Alignment.Center) {
-            Text(text = name, style = MaterialTheme.typography.labelLarge)
-        }
-    }
-}
-
-@Composable
-fun SettingCategoryHeader(title: String) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(vertical = 8.dp)
-    )
-}
-
-@Composable
-fun SettingItem(title: String, subtitle: String) {
-    Surface(
-        onClick = { /* Handle click */ },
-        modifier = Modifier.fillMaxWidth(),
-        shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.medium),
-        colors = ClickableSurfaceDefaults.colors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        )
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = title, style = MaterialTheme.typography.titleMedium, color = Color.White)
-            Text(
-                text = subtitle, 
-                style = MaterialTheme.typography.bodySmall,
-                color = Color.LightGray
-            )
-        }
-    }
-}
-
-@Composable
-fun SettingToggle(title: String, initialValue: Boolean) {
-    var checked by remember { mutableStateOf(initialValue) }
-    
-    Surface(
-        onClick = { checked = !checked },
-        modifier = Modifier.fillMaxWidth(),
-        shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.medium),
-        colors = ClickableSurfaceDefaults.colors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-        )
-    ) {
-        Row(
-            modifier = Modifier.padding(16.dp).fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(text = title, style = MaterialTheme.typography.titleMedium, color = Color.White)
-            Text(
-                text = if (checked) "ON" else "OFF",
-                color = if (checked) MaterialTheme.colorScheme.primary else Color.Gray,
-                style = MaterialTheme.typography.labelLarge
-            )
-        }
-    }
-}
+// (Helper components below...)

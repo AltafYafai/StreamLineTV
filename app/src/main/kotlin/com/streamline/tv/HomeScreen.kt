@@ -1,3 +1,4 @@
+@file:OptIn(ExperimentalTvMaterial3Api::class)
 package com.streamline.tv
 
 import androidx.compose.foundation.layout.*
@@ -9,13 +10,13 @@ import androidx.tv.foundation.lazy.list.TvLazyColumn
 import androidx.tv.foundation.lazy.list.TvLazyRow
 import androidx.tv.material3.*
 import coil.compose.AsyncImage
+import kotlinx.coroutines.delay
 
 data class HomeRow(
     val title: String,
     val items: List<MediaItem>
 )
 
-@OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun HomeScreen(
     addonManager: AddonManager,
@@ -30,7 +31,6 @@ fun HomeScreen(
         if (installedAddons.isNotEmpty()) {
             isLoading = true
             val rows = mutableListOf<HomeRow>()
-            
             for (addonUrl in installedAddons) {
                 val manifest = repository.fetchManifest(addonUrl)
                 manifest?.catalogs?.filter { it.type == "movie" }?.forEach { catalog ->
@@ -43,27 +43,25 @@ fun HomeScreen(
                     }
                 }
             }
-            
-            if (rows.isNotEmpty()) {
-                homeRows = rows
-            } else {
-                homeRows = listOf(HomeRow("Sample Movies", SampleData.movies))
-            }
+            homeRows = if (rows.isNotEmpty()) rows else listOf(HomeRow("Sample Movies", SampleData.movies))
             isLoading = false
         } else {
             homeRows = listOf(HomeRow("Sample Movies", SampleData.movies))
         }
     }
 
-    val featuredMovie = homeRows.firstOrNull()?.items?.firstOrNull()
+    val carouselMovies = remember(homeRows) {
+        homeRows.firstOrNull()?.items?.take(5) ?: SampleData.movies
+    }
 
     TvLazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(bottom = 32.dp)
     ) {
-        if (featuredMovie != null) {
+        // Live Carousel Section
+        if (carouselMovies.isNotEmpty()) {
             item {
-                FeaturedSection(featuredMovie, onMediaClick)
+                FeaturedCarousel(carouselMovies, onMediaClick)
             }
         }
 
@@ -86,55 +84,64 @@ fun HomeScreen(
     }
 }
 
-@OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-fun FeaturedSection(movie: MediaItem, onMediaClick: (MediaItem) -> Unit) {
-    FocusableCard(
-        onClick = { onMediaClick(movie) },
+fun FeaturedCarousel(movies: List<MediaItem>, onMediaClick: (MediaItem) -> Unit) {
+    Carousel(
+        itemCount = movies.size,
         modifier = Modifier
             .fillMaxWidth()
-            .height(400.dp)
+            .height(450.dp)
             .padding(16.dp),
-        shape = MaterialTheme.shapes.large
-    ) {
-        AsyncImage(
-            model = movie.bannerUrl,
-            contentDescription = null,
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop,
-            alpha = 0.6f
+        dotIndicator = CarouselDefaults.dotIndicator(
+            modifier = Modifier.padding(bottom = 24.dp),
+            color = MaterialTheme.colorScheme.onSurface
         )
-        
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(32.dp),
-            contentAlignment = androidx.compose.ui.Alignment.BottomStart
+    ) { index ->
+        val movie = movies[index]
+        CarouselItem(
+            background = {
+                AsyncImage(
+                    model = movie.bannerUrl,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop,
+                    alpha = 0.7f
+                )
+            },
+            onClick = { onMediaClick(movie) }
         ) {
-            Column {
-                Text(
-                    text = movie.title,
-                    style = MaterialTheme.typography.displayMedium
-                )
-                Text(
-                    text = movie.description,
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.fillMaxWidth(0.5f),
-                    maxLines = 2
-                )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(48.dp),
+                contentAlignment = androidx.compose.ui.Alignment.BottomStart
+            ) {
+                Column {
+                    Text(
+                        text = movie.title,
+                        style = MaterialTheme.typography.displayMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = movie.description,
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.fillMaxWidth(0.5f),
+                        maxLines = 2,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         }
     }
 }
 
-@OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun ContentRow(title: String, movies: List<MediaItem>, onMediaClick: (MediaItem) -> Unit) {
     Column(modifier = Modifier.padding(vertical = 12.dp)) {
         Text(
             text = title,
             style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(start = 16.dp, bottom = 8.dp)
+            modifier = Modifier.padding(start = 32.dp, bottom = 12.dp)
         )
         TvLazyRow(
             contentPadding = PaddingValues(start = 32.dp, end = 32.dp),
@@ -147,13 +154,12 @@ fun ContentRow(title: String, movies: List<MediaItem>, onMediaClick: (MediaItem)
     }
 }
 
-@OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun ContentCard(movie: MediaItem, onMediaClick: (MediaItem) -> Unit) {
     FocusableCard(
         onClick = { onMediaClick(movie) },
         modifier = Modifier
-            .width(200.dp)
+            .width(220.dp)
             .aspectRatio(16f / 9f)
     ) {
         AsyncImage(
