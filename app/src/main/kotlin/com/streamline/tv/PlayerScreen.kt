@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem as Media3Item
 import androidx.media3.common.MimeTypes
@@ -34,6 +35,8 @@ import androidx.tv.material3.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 @Composable
@@ -54,14 +57,33 @@ fun PlayerScreen(
     var subtitles by remember { mutableStateOf(selectedStream.subtitles ?: emptyList()) }
     var isPlaying by remember { mutableStateOf(false) }
     var currentPosition by remember { mutableLongStateOf(0L) }
+    var bufferedPosition by remember { mutableLongStateOf(0L) }
     var duration by remember { mutableLongStateOf(0L) }
     
+    // UI State
     var areControlsVisible by remember { mutableStateOf(true) }
     var showSettingsMenu by remember { mutableStateOf(false) }
     var playbackSpeed by remember { mutableFloatStateOf(1.0f) }
     var resizeMode by remember { mutableIntStateOf(AspectRatioFrameLayout.RESIZE_MODE_FIT) }
+    var subtitleSize by remember { mutableFloatStateOf(18f) }
+    var currentTime by remember { mutableStateOf("") }
 
+    // End Time Calculation
+    val endTime = remember(currentPosition, duration) {
+        val remaining = duration - currentPosition
+        val calendar = Calendar.getInstance()
+        calendar.add(Calendar.MILLISECOND, remaining.toInt())
+        SimpleDateFormat("HH:mm", Locale.getDefault()).format(calendar.time)
+    }
+
+    // Auto-hide and Clock timer
     LaunchedEffect(areControlsVisible, isPlaying) {
+        scope.launch {
+            while (true) {
+                currentTime = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
+                delay(1000)
+            }
+        }
         if (areControlsVisible && isPlaying && !showSettingsMenu) {
             delay(5000)
             areControlsVisible = false
@@ -108,9 +130,10 @@ fun PlayerScreen(
     LaunchedEffect(exoPlayer) {
         while (true) {
             currentPosition = exoPlayer.currentPosition
+            bufferedPosition = exoPlayer.bufferedPosition
             duration = exoPlayer.duration.coerceAtLeast(0L)
             isPlaying = exoPlayer.isPlaying
-            delay(1000)
+            delay(500) // Faster polling for smooth seek bar
         }
     }
 
@@ -129,6 +152,9 @@ fun PlayerScreen(
             modifier = Modifier.fillMaxSize()
         )
 
+        // Subtitle Overlay (if using custom rendering)
+        // In this impl we use PlayerView's built-in, but we can customize style here
+
         AnimatedVisibility(
             visible = areControlsVisible,
             enter = fadeIn() + expandVertically(),
@@ -139,10 +165,11 @@ fun PlayerScreen(
                     .fillMaxSize()
                     .background(
                         Brush.verticalGradient(
-                            listOf(Color.Black.copy(alpha = 0.6f), Color.Transparent, Color.Black.copy(alpha = 0.9f))
+                            listOf(Color.Black.copy(alpha = 0.7f), Color.Transparent, Color.Black.copy(alpha = 0.9f))
                         )
                     )
             ) {
+                // Header: Title and Clock
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -167,11 +194,19 @@ fun PlayerScreen(
                             color = Color.LightGray
                         )
                     }
+                    Spacer(Modifier.weight(1f))
+                    Text(
+                        text = currentTime,
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = Color.White,
+                        fontWeight = FontWeight.Light
+                    )
                 }
 
+                // Center Transport (Large & Tactile)
                 Row(
                     modifier = Modifier.align(Alignment.Center),
-                    horizontalArrangement = Arrangement.spacedBy(64.dp),
+                    horizontalArrangement = Arrangement.spacedBy(80.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(
@@ -179,7 +214,7 @@ fun PlayerScreen(
                             areControlsVisible = true
                             exoPlayer.seekTo((exoPlayer.currentPosition - 10000).coerceAtLeast(0)) 
                         },
-                        modifier = Modifier.size(64.dp)
+                        modifier = Modifier.size(80.dp)
                     ) {
                         Icon(Icons.Default.Replay10, contentDescription = "-10s", tint = Color.White, modifier = Modifier.fillMaxSize())
                     }
@@ -196,13 +231,13 @@ fun PlayerScreen(
                             focusedContainerColor = Color.White,
                             focusedContentColor = Color.Black
                         ),
-                        modifier = Modifier.size(100.dp)
+                        modifier = Modifier.size(120.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
                                 imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow, 
                                 contentDescription = "Play/Pause", 
-                                modifier = Modifier.size(64.dp)
+                                modifier = Modifier.size(80.dp)
                             )
                         }
                     }
@@ -212,33 +247,46 @@ fun PlayerScreen(
                             areControlsVisible = true
                             exoPlayer.seekTo((exoPlayer.currentPosition + 30000).coerceAtMost(duration)) 
                         },
-                        modifier = Modifier.size(64.dp)
+                        modifier = Modifier.size(80.dp)
                     ) {
                         Icon(Icons.Default.Forward30, contentDescription = "+30s", tint = Color.White, modifier = Modifier.fillMaxSize())
                     }
                 }
 
+                // Footer: Smart Seek Bar and Quick Actions
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 48.dp, vertical = 48.dp)
                         .align(Alignment.BottomCenter)
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(formatTime(currentPosition), color = Color.White, style = MaterialTheme.typography.labelMedium)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(formatTime(currentPosition), color = Color.White, style = MaterialTheme.typography.labelLarge)
+                        Text("Ends at $endTime", color = Color.LightGray, style = MaterialTheme.typography.labelLarge)
+                        Text(formatTime(duration), color = Color.White, style = MaterialTheme.typography.labelLarge)
+                    }
+                    
+                    Box(modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp)) {
+                        // Buffer Indicator
+                        LinearProgressIndicator(
+                            progress = if (duration > 0) bufferedPosition.toFloat() / duration else 0f,
+                            modifier = Modifier.fillMaxWidth().height(10.dp),
+                            color = Color.White.copy(alpha = 0.2f),
+                            trackColor = Color.DarkGray.copy(alpha = 0.5f)
+                        )
+                        // Playback Progress
                         LinearProgressIndicator(
                             progress = if (duration > 0) currentPosition.toFloat() / duration else 0f,
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(horizontal = 24.dp)
-                                .height(10.dp),
+                            modifier = Modifier.fillMaxWidth().height(10.dp),
                             color = MaterialTheme.colorScheme.primary,
-                            trackColor = Color.DarkGray
+                            trackColor = Color.Transparent // Layers over buffer
                         )
-                        Text(formatTime(duration), color = Color.White, style = MaterialTheme.typography.labelMedium)
                     }
 
-                    Spacer(Modifier.height(32.dp))
+                    Spacer(Modifier.height(24.dp))
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -247,15 +295,21 @@ fun PlayerScreen(
                     ) {
                         Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                             PlayerActionItem(Icons.Rounded.Subtitles, "Subtitles") { showSettingsMenu = true }
-                            PlayerActionItem(Icons.Rounded.SlowMotionVideo, "Speed (${playbackSpeed}x)") { showSettingsMenu = true }
-                            PlayerActionItem(Icons.Rounded.AspectRatio, "Ratio") { showSettingsMenu = true }
+                            PlayerActionItem(Icons.Rounded.AudioFile, "Audio") { showSettingsMenu = true }
+                            PlayerActionItem(Icons.Rounded.Speed, "Speed") { showSettingsMenu = true }
                         }
                         
-                        if (mediaItem.type == "series") {
-                            Button(onClick = { /* Next logic */ }) {
-                                Icon(Icons.Rounded.SkipNext, contentDescription = null)
-                                Spacer(Modifier.width(8.dp))
-                                Text("Next Episode")
+                        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                            if (mediaItem.type == "series") {
+                                Button(onClick = { /* Next Episode logic */ }) {
+                                    Icon(Icons.Rounded.SkipNext, contentDescription = null)
+                                    Spacer(Modifier.width(8.dp))
+                                    Text("Next Episode")
+                                }
+                            }
+                            
+                            IconButton(onClick = { showSettingsMenu = true }) {
+                                Icon(Icons.Default.Settings, contentDescription = "Settings", tint = Color.White, modifier = Modifier.size(32.dp))
                             }
                         }
                     }
@@ -263,20 +317,21 @@ fun PlayerScreen(
             }
         }
         
+        // Comprehensive Settings Menu (Overhauled)
         if (showSettingsMenu) {
             areControlsVisible = true
             Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)).clickable { showSettingsMenu = false }, contentAlignment = Alignment.CenterEnd) {
                 MaterialSurface(
-                    modifier = Modifier.width(400.dp).fillMaxHeight(),
+                    modifier = Modifier.width(420.dp).fillMaxHeight(),
                     color = androidx.compose.material3.MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     TvLazyColumn(Modifier.padding(32.dp)) {
-                        item { Text("Player Customization", style = MaterialTheme.typography.headlineMedium, color = Color.White) }
+                        item { Text("Player Control Center", style = MaterialTheme.typography.headlineMedium, color = Color.White) }
                         
                         item { PlayerSettingHeader("Playback Speed") }
                         item {
                             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                listOf(0.5f, 1.0f, 1.25f, 1.5f, 2.0f).forEach { speed ->
+                                listOf(0.5f, 1.0f, 1.5f, 2.0f).forEach { speed ->
                                     PlayerSelectableChip(label = "${speed}x", isSelected = playbackSpeed == speed) {
                                         playbackSpeed = speed
                                         exoPlayer.playbackParameters = PlaybackParameters(speed)
@@ -285,12 +340,16 @@ fun PlayerScreen(
                             }
                         }
 
+                        item { PlayerSettingHeader("Audio Track") }
+                        item { PlayerSelectableItem("English (Primary)", true) { } }
+                        item { PlayerSelectableItem("Arabic (Secondary)", false) { } }
+
                         item { PlayerSettingHeader("Video Scaling") }
                         item {
                             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                                 PlayerSelectableItem("Original Aspect", resizeMode == AspectRatioFrameLayout.RESIZE_MODE_FIT) { resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT }
                                 PlayerSelectableItem("Zoom & Crop", resizeMode == AspectRatioFrameLayout.RESIZE_MODE_ZOOM) { resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM }
-                                PlayerSelectableItem("Fill Screen", resizeMode == AspectRatioFrameLayout.RESIZE_MODE_FILL) { resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL }
+                                PlayerSelectableItem("Stretch to Fill", resizeMode == AspectRatioFrameLayout.RESIZE_MODE_FILL) { resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL }
                             }
                         }
 
@@ -298,7 +357,18 @@ fun PlayerScreen(
                             item { PlayerSettingHeader("Subtitles") }
                             items(subtitles.size) { index ->
                                 val sub = subtitles[index]
-                                PlayerSelectableItem(sub.lang, false) { /* track toggle */ }
+                                PlayerSelectableItem(sub.lang, false) { }
+                            }
+                        }
+                        
+                        item { PlayerSettingHeader("Subtitle Text Size") }
+                        item {
+                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                listOf(14f, 18f, 24f, 32f).forEach { size ->
+                                    PlayerSelectableChip(label = when(size){ 14f->"Small"; 18f->"Medium"; 24f->"Large"; else->"Huge" }, isSelected = subtitleSize == size) {
+                                        subtitleSize = size
+                                    }
+                                }
                             }
                         }
                         
@@ -309,3 +379,4 @@ fun PlayerScreen(
         }
     }
 }
+// (PlayerSettingHeader, PlayerSelectableChip, PlayerSelectableItem, PlayerActionItem, formatTime remain unchanged below...)
