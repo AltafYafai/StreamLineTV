@@ -1,3 +1,4 @@
+@file:OptIn(ExperimentalTvMaterial3Api::class)
 package com.streamline.tv
 
 import androidx.compose.foundation.layout.*
@@ -17,7 +18,6 @@ import androidx.tv.foundation.lazy.list.TvLazyColumn
 import androidx.tv.material3.*
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     addonManager: AddonManager, 
@@ -193,7 +193,6 @@ fun SettingsScreen(
     }
 }
 
-@OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun ThemeButton(name: String, isSelected: Boolean, onClick: () -> Unit) {
     Surface(
@@ -211,7 +210,6 @@ fun ThemeButton(name: String, isSelected: Boolean, onClick: () -> Unit) {
     }
 }
 
-@OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun SettingCategoryHeader(title: String) {
     Text(
@@ -222,7 +220,6 @@ fun SettingCategoryHeader(title: String) {
     )
 }
 
-@OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun SettingItem(title: String, subtitle: String) {
     Surface(
@@ -244,7 +241,6 @@ fun SettingItem(title: String, subtitle: String) {
     }
 }
 
-@OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun SettingToggle(title: String, initialValue: Boolean) {
     var checked by remember { mutableStateOf(initialValue) }

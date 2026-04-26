@@ -1,3 +1,4 @@
+@file:OptIn(ExperimentalTvMaterial3Api::class)
 package com.streamline.tv
 
 import androidx.compose.foundation.layout.*
@@ -23,7 +24,6 @@ interface RepoService {
     suspend fun getRepo(): AddonRepoResponse
 }
 
-@OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun AddonBrowserScreen(
     addonManager: AddonManager,

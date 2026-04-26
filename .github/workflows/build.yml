@@ -18,6 +18,8 @@ permissions:
 jobs:
   check-and-build:
     runs-on: ubuntu-latest
+    # Avoid redundant run if both main and tag are pushed
+    if: github.event_name != 'push' || !startsWith(github.ref, 'refs/tags/v') || github.ref_type == 'tag'
     steps:
     - uses: actions/checkout@v4
     

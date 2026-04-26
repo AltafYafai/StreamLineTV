@@ -1,3 +1,4 @@
+@file:OptIn(ExperimentalTvMaterial3Api::class)
 package com.streamline.tv
 
 import androidx.compose.animation.*
@@ -32,7 +33,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
-@OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun PlayerScreen(
     mediaItem: MediaItem,
@@ -285,7 +285,6 @@ fun SettingHeader(title: String) {
     )
 }
 
-@OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun PlayerSelectableChip(label: String, isSelected: Boolean, onClick: () -> Unit) {
     Surface(
@@ -301,7 +300,6 @@ fun PlayerSelectableChip(label: String, isSelected: Boolean, onClick: () -> Unit
     }
 }
 
-@OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun PlayerSelectableItem(label: String, isSelected: Boolean, onClick: () -> Unit) {
     Surface(
