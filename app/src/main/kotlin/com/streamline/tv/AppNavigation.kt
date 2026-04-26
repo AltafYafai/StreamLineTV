@@ -1,3 +1,4 @@
+@file:OptIn(ExperimentalTvMaterial3Api::class)
 package com.streamline.tv
 
 import androidx.activity.compose.BackHandler
@@ -14,7 +15,6 @@ import androidx.compose.ui.unit.dp
 import androidx.tv.material3.*
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun AppNavigation(themeManager: ThemeManager) {
     val context = LocalContext.current
@@ -35,7 +35,8 @@ fun AppNavigation(themeManager: ThemeManager) {
         NavItem("Catalog", Icons.Default.List),
         NavItem("Search", Icons.Default.Search),
         NavItem("Library", Icons.Default.Favorite),
-        NavItem("Settings", Icons.Default.Settings)
+        NavItem("Settings", Icons.Default.Settings),
+        NavItem("About", Icons.Default.Info)
     )
 
     // Initialize default addons
@@ -126,7 +127,9 @@ fun AppNavigation(themeManager: ThemeManager) {
                         4 -> SettingsScreen(
                             addonManager = addonManager, 
                             themeManager = themeManager,
-                            onBrowseAddons = { isAddonBrowserVisible = true },
+                            onBrowseAddons = { isAddonBrowserVisible = true }
+                        )
+                        5 -> AboutScreen(
                             onCheckUpdate = { showUpdateDialog = true }
                         )
                     }
@@ -137,7 +140,7 @@ fun AppNavigation(themeManager: ThemeManager) {
         // Show Update Dialog overlay
         if (showUpdateDialog) {
             UpdateDialog(
-                currentVersion = "1.0",
+                currentVersion = "1.0.4",
                 onDismiss = { showUpdateDialog = false }
             )
         }

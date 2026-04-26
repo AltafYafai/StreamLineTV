@@ -22,8 +22,7 @@ import kotlinx.coroutines.launch
 fun SettingsScreen(
     addonManager: AddonManager, 
     themeManager: ThemeManager,
-    onBrowseAddons: () -> Unit,
-    onCheckUpdate: () -> Unit
+    onBrowseAddons: () -> Unit
 ) {
     var addonUrl by remember { mutableStateOf("") }
     val installedAddons by addonManager.installedAddons.collectAsState(initial = emptyList())
@@ -161,34 +160,6 @@ fun SettingsScreen(
             item { SettingCategoryHeader("Playback") }
             item { SettingToggle("Auto Frame Rate (AFR)", true) }
             item { SettingToggle("Hardware Acceleration", true) }
-
-            item { Spacer(modifier = Modifier.height(16.dp)) }
-
-            item { SettingCategoryHeader("About") }
-            item {
-                Surface(
-                    onClick = onCheckUpdate,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.medium),
-                    colors = ClickableSurfaceDefaults.colors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
-                    )
-                ) {
-                    Row(
-                        modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text(text = "Check for Updates", style = MaterialTheme.typography.titleMedium, color = Color.White)
-                            Text(text = "Current Version: 1.0", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-                        }
-                        Icon(Icons.Default.Refresh, contentDescription = null, tint = Color.White)
-                    }
-                }
-            }
-            item { SettingItem("Version", "1.0.1-beta") }
-            item { SettingItem("License", "GPL v3.0") }
         }
     }
 }
@@ -256,7 +227,7 @@ fun SettingToggle(title: String, initialValue: Boolean) {
         Row(
             modifier = Modifier.padding(16.dp).fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(text = title, style = MaterialTheme.typography.titleMedium, color = Color.White)
             Text(
