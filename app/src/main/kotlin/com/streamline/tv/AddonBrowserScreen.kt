@@ -17,7 +17,6 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import androidx.compose.material3.Surface as MaterialSurface
-import androidx.compose.material3.MaterialTheme as StdMaterialTheme
 
 interface RepoService {
     @GET("nuvio-providers/refs/heads/main/manifest.json")
@@ -43,7 +42,7 @@ fun AddonBrowserScreen(
                 .create(RepoService::class.java)
             repoData = service.getRepo()
         } catch (e: Exception) {
-            // Handle error
+            // Silence error
         } finally {
             isLoading = false
         }
@@ -113,16 +112,16 @@ fun AddonBrowserScreen(
                             )
                             Spacer(modifier = Modifier.height(12.dp))
                             
-                            val statusColor = if (isInstalled) Color.Red else StdMaterialTheme.colorScheme.primary
+                            val statusColor = if (isInstalled) Color.Red else MaterialTheme.colorScheme.primary
 
                             MaterialSurface(
-                                shape = StdMaterialTheme.shapes.extraSmall,
+                                shape = androidx.compose.material3.MaterialTheme.shapes.extraSmall,
                                 color = statusColor.copy(alpha = 0.2f),
                                 contentColor = statusColor
                             ) {
                                 Text(
                                     text = if (isInstalled) "UNINSTALL" else "INSTALL",
-                                    style = StdMaterialTheme.typography.labelLarge,
+                                    style = MaterialTheme.typography.labelLarge,
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                                 )
                             }

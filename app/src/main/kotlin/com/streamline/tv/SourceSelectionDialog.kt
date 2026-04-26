@@ -13,6 +13,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.tv.foundation.lazy.list.TvLazyColumn
 import androidx.tv.material3.*
 import kotlinx.coroutines.launch
+import androidx.compose.material3.Surface as MaterialSurface
 
 @Composable
 fun SourceSelectionDialog(
@@ -50,11 +51,12 @@ fun SourceSelectionDialog(
                 modifier = Modifier
                     .width(600.dp)
                     .fillMaxHeight(0.8f),
-                shape = MaterialTheme.shapes.large,
-                colors = SurfaceDefaults.colors(
+                shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.large),
+                colors = ClickableSurfaceDefaults.colors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant,
                     contentColor = Color.White
-                )
+                ),
+                onClick = {} // Trap focus
             ) {
                 Column(modifier = Modifier.padding(32.dp)) {
                     Text(
@@ -72,7 +74,7 @@ fun SourceSelectionDialog(
 
                     if (isLoading) {
                         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text("Fetching available links...", style = MaterialTheme.typography.titleMedium)
+                            Text("Fetching available links...", style = MaterialTheme.typography.titleMedium, color = Color.White)
                         }
                     } else if (streams.isEmpty()) {
                         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -120,7 +122,6 @@ fun SourceItem(stream: AddonStream, onClick: () -> Unit) {
                 )
             }
             
-            // Quality Badge (Mental draft - regex check title)
             val quality = remember(stream.title) {
                 when {
                     stream.title?.contains("4k", ignoreCase = true) == true -> "4K"
@@ -130,14 +131,15 @@ fun SourceItem(stream: AddonStream, onClick: () -> Unit) {
                 }
             }
             
-            Surface(
-                shape = MaterialTheme.shapes.extraSmall,
-                colors = SurfaceDefaults.colors(containerColor = Color.White.copy(alpha = 0.1f))
+            MaterialSurface(
+                shape = androidx.compose.material3.MaterialTheme.shapes.extraSmall,
+                color = Color.White.copy(alpha = 0.1f)
             ) {
                 Text(
                     text = quality,
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                    style = MaterialTheme.typography.labelMedium
+                    style = MaterialTheme.typography.labelMedium,
+                    color = Color.White
                 )
             }
         }

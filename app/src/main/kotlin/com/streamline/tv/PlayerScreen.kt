@@ -22,7 +22,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem as Media3Item
 import androidx.media3.common.MimeTypes
@@ -60,15 +59,12 @@ fun PlayerScreen(
     var bufferedPosition by remember { mutableLongStateOf(0L) }
     var duration by remember { mutableLongStateOf(0L) }
     
-    // UI State
     var areControlsVisible by remember { mutableStateOf(true) }
     var showSettingsMenu by remember { mutableStateOf(false) }
     var playbackSpeed by remember { mutableFloatStateOf(1.0f) }
     var resizeMode by remember { mutableIntStateOf(AspectRatioFrameLayout.RESIZE_MODE_FIT) }
-    var subtitleSize by remember { mutableFloatStateOf(18f) }
     var currentTime by remember { mutableStateOf("") }
 
-    // End Time Calculation
     val endTime = remember(currentPosition, duration) {
         val remaining = duration - currentPosition
         val calendar = Calendar.getInstance()
@@ -76,7 +72,6 @@ fun PlayerScreen(
         SimpleDateFormat("HH:mm", Locale.getDefault()).format(calendar.time)
     }
 
-    // Auto-hide and Clock timer
     LaunchedEffect(areControlsVisible, isPlaying) {
         scope.launch {
             while (true) {
@@ -133,7 +128,7 @@ fun PlayerScreen(
             bufferedPosition = exoPlayer.bufferedPosition
             duration = exoPlayer.duration.coerceAtLeast(0L)
             isPlaying = exoPlayer.isPlaying
-            delay(500) // Faster polling for smooth seek bar
+            delay(500)
         }
     }
 
@@ -152,9 +147,6 @@ fun PlayerScreen(
             modifier = Modifier.fillMaxSize()
         )
 
-        // Subtitle Overlay (if using custom rendering)
-        // In this impl we use PlayerView's built-in, but we can customize style here
-
         AnimatedVisibility(
             visible = areControlsVisible,
             enter = fadeIn() + expandVertically(),
@@ -169,7 +161,6 @@ fun PlayerScreen(
                         )
                     )
             ) {
-                // Header: Title and Clock
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -203,7 +194,6 @@ fun PlayerScreen(
                     )
                 }
 
-                // Center Transport (Large & Tactile)
                 Row(
                     modifier = Modifier.align(Alignment.Center),
                     horizontalArrangement = Arrangement.spacedBy(80.dp),
@@ -253,7 +243,6 @@ fun PlayerScreen(
                     }
                 }
 
-                // Footer: Smart Seek Bar and Quick Actions
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -270,19 +259,17 @@ fun PlayerScreen(
                     }
                     
                     Box(modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp)) {
-                        // Buffer Indicator
                         LinearProgressIndicator(
                             progress = if (duration > 0) bufferedPosition.toFloat() / duration else 0f,
                             modifier = Modifier.fillMaxWidth().height(10.dp),
                             color = Color.White.copy(alpha = 0.2f),
                             trackColor = Color.DarkGray.copy(alpha = 0.5f)
                         )
-                        // Playback Progress
                         LinearProgressIndicator(
                             progress = if (duration > 0) currentPosition.toFloat() / duration else 0f,
                             modifier = Modifier.fillMaxWidth().height(10.dp),
                             color = MaterialTheme.colorScheme.primary,
-                            trackColor = Color.Transparent // Layers over buffer
+                            trackColor = Color.Transparent
                         )
                     }
 
@@ -301,7 +288,7 @@ fun PlayerScreen(
                         
                         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                             if (mediaItem.type == "series") {
-                                Button(onClick = { /* Next Episode logic */ }) {
+                                Button(onClick = { /* Next logic */ }) {
                                     Icon(Icons.Rounded.SkipNext, contentDescription = null)
                                     Spacer(Modifier.width(8.dp))
                                     Text("Next Episode")
@@ -317,7 +304,6 @@ fun PlayerScreen(
             }
         }
         
-        // Comprehensive Settings Menu (Overhauled)
         if (showSettingsMenu) {
             areControlsVisible = true
             Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)).clickable { showSettingsMenu = false }, contentAlignment = Alignment.CenterEnd) {
@@ -342,7 +328,6 @@ fun PlayerScreen(
 
                         item { PlayerSettingHeader("Audio Track") }
                         item { PlayerSelectableItem("English (Primary)", true) { } }
-                        item { PlayerSelectableItem("Arabic (Secondary)", false) { } }
 
                         item { PlayerSettingHeader("Video Scaling") }
                         item {
@@ -360,18 +345,6 @@ fun PlayerScreen(
                                 PlayerSelectableItem(sub.lang, false) { }
                             }
                         }
-                        
-                        item { PlayerSettingHeader("Subtitle Text Size") }
-                        item {
-                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                listOf(14f, 18f, 24f, 32f).forEach { size ->
-                                    PlayerSelectableChip(label = when(size){ 14f->"Small"; 18f->"Medium"; 24f->"Large"; else->"Huge" }, isSelected = subtitleSize == size) {
-                                        subtitleSize = size
-                                    }
-                                }
-                            }
-                        }
-                        
                         item { Spacer(Modifier.height(100.dp)) }
                     }
                 }
@@ -379,4 +352,70 @@ fun PlayerScreen(
         }
     }
 }
-// (PlayerSettingHeader, PlayerSelectableChip, PlayerSelectableItem, PlayerActionItem, formatTime remain unchanged below...)
+
+@Composable
+fun PlayerSettingHeader(title: String) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
+    )
+}
+
+@Composable
+fun PlayerSelectableChip(label: String, isSelected: Boolean, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.small),
+        colors = ClickableSurfaceDefaults.colors(
+            containerColor = if (isSelected) MaterialTheme.colorScheme.primary else Color.DarkGray,
+            contentColor = if (isSelected) Color.Black else Color.White,
+            focusedContainerColor = Color.White,
+            focusedContentColor = Color.Black
+        ),
+        modifier = Modifier.padding(vertical = 4.dp)
+    ) {
+        Text(label, modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp), style = MaterialTheme.typography.labelLarge)
+    }
+}
+
+@Composable
+fun PlayerSelectableItem(label: String, isSelected: Boolean, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.medium),
+        colors = ClickableSurfaceDefaults.colors(
+            containerColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) else Color.Transparent,
+            contentColor = if (isSelected) MaterialTheme.colorScheme.primary else Color.White,
+            focusedContainerColor = MaterialTheme.colorScheme.primary,
+            focusedContentColor = Color.Black
+        )
+    ) {
+        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(label, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodyLarge)
+            if (isSelected) Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(20.dp))
+        }
+    }
+}
+
+@Composable
+fun PlayerActionItem(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.medium),
+        colors = ClickableSurfaceDefaults.colors(
+            containerColor = Color.White.copy(alpha = 0.05f),
+            contentColor = Color.White,
+            focusedContainerColor = Color.White,
+            focusedContentColor = Color.Black
+        )
+    ) {
+        Row(Modifier.padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp))
+            Spacer(Modifier.width(12.dp))
+            Text(label, style = MaterialTheme.typography.labelLarge)
+        }
+    }
+}
