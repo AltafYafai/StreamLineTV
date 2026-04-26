@@ -20,6 +20,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0 # Fetch all history for accurate changelogs
     
     - name: set up JDK 17
       uses: actions/setup-java@v4
@@ -31,10 +33,7 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Run Build (Fast Mode)
-      # Combined tasks in a single job to avoid setup overhead. 
-      # Skips lint/tests on tags for maximum speed if you want, 
-      # but here we run them in parallel with the build for safety.
+    - name: Run Build
       run: |
         if [[ "${{ github.ref }}" == refs/tags/* ]]; then
           ./gradlew assembleDebug --parallel --configure-on-demand
@@ -42,20 +41,17 @@ jobs:
           ./gradlew lintDebug testDebugUnitTest assembleDebug --parallel --configure-on-demand
         fi
 
-    - name: Upload Build Artifacts
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: build-reports
-        path: |
-          app/build/reports/
-          app/build/outputs/apk/debug/app-debug.apk
+    - name: Prepare Artifact
+      if: startsWith(github.ref, 'refs/tags/v')
+      run: |
+        TAG_NAME=${{ github.ref_name }}
+        cp app/build/outputs/apk/debug/app-debug.apk StreamLineTV_${TAG_NAME}.apk
 
     - name: Create Release
       if: startsWith(github.ref, 'refs/tags/v')
       uses: softprops/action-gh-release@v1
       with:
-        files: app/build/outputs/apk/debug/app-debug.apk
+        files: StreamLineTV_${{ github.ref_name }}.apk
         generate_release_notes: true
       env:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -66,7 +62,7 @@ jobs:
         TAG_NAME=${{ github.ref_name }}
         REPO_NAME=${{ github.repository }}
         RELEASE_URL="https://github.com/${REPO_NAME}/releases/tag/${TAG_NAME}"
-        MESSAGE="🚀 *Fast Release:* ${REPO_NAME} ${TAG_NAME}%0A%0A📦 [Download APK](${RELEASE_URL})"
+        MESSAGE="🚀 *New Release:* ${REPO_NAME} ${TAG_NAME}%0A%0A📦 [Download StreamLineTV_${TAG_NAME}.apk](${RELEASE_URL})"
         
         curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
           -d "chat_id=${{ secrets.TELEGRAM_CHAT_ID }}" \
