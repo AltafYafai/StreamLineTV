@@ -15,6 +15,8 @@ import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
+import androidx.compose.material3.Surface as MaterialSurface
+import androidx.compose.material3.MaterialTheme as StdMaterialTheme
 
 interface RepoService {
     @GET("nuvio-providers/refs/heads/main/manifest.json")
@@ -94,7 +96,7 @@ fun AddonBrowserScreen(
                             AsyncImage(
                                 model = scraper.logo,
                                 contentDescription = scraper.name,
-                                modifier = Modifier.size(48.dp).align(Alignment.CenterHorizontally),
+                                modifier = Modifier.size(64.dp).align(Alignment.CenterHorizontally),
                                 contentScale = ContentScale.Fit
                             )
                             Text(
@@ -111,26 +113,16 @@ fun AddonBrowserScreen(
                             )
                             Spacer(modifier = Modifier.height(12.dp))
                             
-                            val statusColors = if (isInstalled) {
-                                ClickableSurfaceDefaults.colors(
-                                    containerColor = Color.Red.copy(alpha = 0.2f),
-                                    contentColor = Color.Red
-                                )
-                            } else {
-                                ClickableSurfaceDefaults.colors(
-                                    containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                                    contentColor = MaterialTheme.colorScheme.primary
-                                )
-                            }
+                            val statusColor = if (isInstalled) Color.Red else StdMaterialTheme.colorScheme.primary
 
-                            Surface(
-                                onClick = { /* Logic handled by parent card */ },
-                                shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.extraSmall),
-                                colors = statusColors
+                            MaterialSurface(
+                                shape = StdMaterialTheme.shapes.extraSmall,
+                                color = statusColor.copy(alpha = 0.2f),
+                                contentColor = statusColor
                             ) {
                                 Text(
                                     text = if (isInstalled) "UNINSTALL" else "INSTALL",
-                                    style = MaterialTheme.typography.labelLarge,
+                                    style = StdMaterialTheme.typography.labelLarge,
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                                 )
                             }

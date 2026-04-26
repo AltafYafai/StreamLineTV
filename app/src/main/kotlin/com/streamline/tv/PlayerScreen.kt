@@ -174,7 +174,7 @@ fun PlayerScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(formatTime(currentPosition), color = Color.White)
                     LinearProgressIndicator(
-                        progress = { if (duration > 0) currentPosition.toFloat() / duration else 0f },
+                        progress = if (duration > 0) currentPosition.toFloat() / duration else 0f,
                         modifier = Modifier.weight(1f).padding(horizontal = 16.dp).height(8.dp),
                         color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
                         trackColor = Color.DarkGray
@@ -244,7 +244,7 @@ fun PlayerScreen(
                         item {
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 listOf(0.5f, 1.0f, 1.5f, 2.0f).forEach { speed ->
-                                    SelectableChip(label = "${speed}x", isSelected = playbackSpeed == speed) {
+                                    PlayerSelectableChip(label = "${speed}x", isSelected = playbackSpeed == speed) {
                                         playbackSpeed = speed
                                         exoPlayer.playbackParameters = PlaybackParameters(speed)
                                     }
@@ -255,9 +255,9 @@ fun PlayerScreen(
                         item { SettingHeader("Resize Mode") }
                         item {
                             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                SelectableItem("Fit", resizeMode == AspectRatioFrameLayout.RESIZE_MODE_FIT) { resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT }
-                                SelectableItem("Zoom", resizeMode == AspectRatioFrameLayout.RESIZE_MODE_ZOOM) { resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM }
-                                SelectableItem("Fill", resizeMode == AspectRatioFrameLayout.RESIZE_MODE_FILL) { resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL }
+                                PlayerSelectableItem("Fit", resizeMode == AspectRatioFrameLayout.RESIZE_MODE_FIT) { resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT }
+                                PlayerSelectableItem("Zoom", resizeMode == AspectRatioFrameLayout.RESIZE_MODE_ZOOM) { resizeMode = AspectRatioFrameLayout.RESIZE_MODE_ZOOM }
+                                PlayerSelectableItem("Fill", resizeMode == AspectRatioFrameLayout.RESIZE_MODE_FILL) { resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FILL }
                             }
                         }
 
@@ -265,7 +265,7 @@ fun PlayerScreen(
                             item { SettingHeader("Subtitles") }
                             items(subtitles.size) { index ->
                                 val sub = subtitles[index]
-                                SelectableItem(sub.lang, false) { /* track toggle */ }
+                                PlayerSelectableItem(sub.lang, false) { /* track toggle */ }
                             }
                         }
                     }
@@ -287,7 +287,7 @@ fun SettingHeader(title: String) {
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-fun SelectableChip(label: String, isSelected: Boolean, onClick: () -> Unit) {
+fun PlayerSelectableChip(label: String, isSelected: Boolean, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
         shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.small),
@@ -303,7 +303,7 @@ fun SelectableChip(label: String, isSelected: Boolean, onClick: () -> Unit) {
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-fun SelectableItem(label: String, isSelected: Boolean, onClick: () -> Unit) {
+fun PlayerSelectableItem(label: String, isSelected: Boolean, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
