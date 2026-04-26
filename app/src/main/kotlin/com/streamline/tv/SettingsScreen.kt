@@ -4,10 +4,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Storage
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -18,7 +21,12 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-fun SettingsScreen(addonManager: AddonManager, themeManager: ThemeManager) {
+fun SettingsScreen(
+    addonManager: AddonManager, 
+    themeManager: ThemeManager,
+    onBrowseAddons: () -> Unit,
+    onCheckUpdate: () -> Unit
+) {
     var addonUrl by remember { mutableStateOf("") }
     val installedAddons by addonManager.installedAddons.collectAsState(initial = emptyList())
     val currentThemeName by themeManager.selectedThemeName.collectAsState(initial = "Purple")
@@ -50,6 +58,24 @@ fun SettingsScreen(addonManager: AddonManager, themeManager: ThemeManager) {
 
             item { SettingCategoryHeader("Addons") }
             
+            item {
+                Surface(
+                    onClick = onBrowseAddons,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.medium),
+                    colors = ClickableSurfaceDefaults.colors(
+                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
+                        contentColor = Color.Black
+                    )
+                ) {
+                    Row(modifier = Modifier.padding(16.dp), horizontalArrangement = Arrangement.Center) {
+                        Icon(Icons.Default.Storage, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Browse Addon Repository", style = MaterialTheme.typography.labelLarge)
+                    }
+                }
+            }
+
             item {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
@@ -120,6 +146,28 @@ fun SettingsScreen(addonManager: AddonManager, themeManager: ThemeManager) {
             item { Spacer(modifier = Modifier.height(16.dp)) }
 
             item { SettingCategoryHeader("About") }
+            item {
+                Surface(
+                    onClick = onCheckUpdate,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.medium),
+                    colors = ClickableSurfaceDefaults.colors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(text = "Check for Updates", style = MaterialTheme.typography.titleMedium, color = Color.White)
+                            Text(text = "Current Version: 1.0", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                        }
+                        Icon(Icons.Default.Refresh, contentDescription = null, tint = Color.White)
+                    }
+                }
+            }
             item { SettingItem("Version", "1.0.0-beta") }
             item { SettingItem("License", "GPL v3.0") }
         }

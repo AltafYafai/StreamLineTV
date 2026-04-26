@@ -26,7 +26,9 @@ fun AppNavigation(themeManager: ThemeManager) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     var detailMediaItem by remember { mutableStateOf<MediaItem?>(null) }
     var playingMediaItem by remember { mutableStateOf<MediaItem?>(null) }
-    var showUpdateDialog by remember { mutableStateOf(true) }
+    
+    var isAddonBrowserVisible by remember { mutableStateOf(false) }
+    var showUpdateDialog by remember { mutableStateOf(false) }
     
     val navItems = listOf(
         NavItem("Home", Icons.Default.Home),
@@ -42,11 +44,13 @@ fun AppNavigation(themeManager: ThemeManager) {
     }
 
     // Handle Back Button
-    BackHandler(enabled = playingMediaItem != null || detailMediaItem != null) {
+    BackHandler(enabled = playingMediaItem != null || detailMediaItem != null || isAddonBrowserVisible) {
         if (playingMediaItem != null) {
             playingMediaItem = null
         } else if (detailMediaItem != null) {
             detailMediaItem = null
+        } else if (isAddonBrowserVisible) {
+            isAddonBrowserVisible = false
         }
     }
 
@@ -67,6 +71,11 @@ fun AppNavigation(themeManager: ThemeManager) {
                 libraryManager = libraryManager,
                 onWatchNow = { playingMediaItem = it },
                 onBack = { detailMediaItem = null }
+            )
+        } else if (isAddonBrowserVisible) {
+            AddonBrowserScreen(
+                addonManager = addonManager,
+                onBack = { isAddonBrowserVisible = false }
             )
         } else {
             NavigationDrawer(
@@ -114,7 +123,12 @@ fun AppNavigation(themeManager: ThemeManager) {
                         1 -> CatalogScreen(addonManager, repository, onMediaClick)
                         2 -> SearchScreen(addonManager, repository, libraryManager, onMediaClick)
                         3 -> LibraryScreen(addonManager, repository, libraryManager, onMediaClick)
-                        4 -> SettingsScreen(addonManager, themeManager)
+                        4 -> SettingsScreen(
+                            addonManager = addonManager, 
+                            themeManager = themeManager,
+                            onBrowseAddons = { isAddonBrowserVisible = true },
+                            onCheckUpdate = { showUpdateDialog = true }
+                        )
                     }
                 }
             }
@@ -123,7 +137,7 @@ fun AppNavigation(themeManager: ThemeManager) {
         // Show Update Dialog overlay
         if (showUpdateDialog) {
             UpdateDialog(
-                currentVersion = "1.0", // This should match your versionName in build.gradle.kts
+                currentVersion = "1.0",
                 onDismiss = { showUpdateDialog = false }
             )
         }
