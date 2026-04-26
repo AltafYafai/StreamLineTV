@@ -47,7 +47,7 @@ fun AboutScreen(
                     ) {
                         Column {
                             Text(text = "Check for Updates", style = MaterialTheme.typography.titleMedium, color = Color.White)
-                            Text(text = "Current Version: 1.0.4", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                            Text(text = "Current Version: 1.0.7", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
                         }
                         Icon(Icons.Default.Refresh, contentDescription = null, tint = Color.White)
                     }
@@ -55,7 +55,7 @@ fun AboutScreen(
             }
 
             item { SettingCategoryHeader("Application Details") }
-            item { SettingItem("Version", "1.0.4") }
+            item { SettingItem("Version", "1.0.7") }
             item { SettingItem("License", "GPL v3.0") }
             item { SettingItem("Developer", "Altaf Yafai") }
             item { SettingItem("GitHub", "github.com/AltafYafai/StreamLineTV") }

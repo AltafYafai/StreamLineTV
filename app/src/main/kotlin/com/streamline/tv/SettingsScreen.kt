@@ -104,7 +104,6 @@ fun SettingsScreen(
 
             items(installedAddons.size) { index ->
                 val url = installedAddons[index]
-                // Improved deletion visibility: Single focusable item with primary action = Remove
                 Surface(
                     onClick = { 
                         scope.launch { addonManager.removeAddon(url) }
@@ -119,7 +118,7 @@ fun SettingsScreen(
                     )
                 ) {
                     Row(
-                        modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                        modifier = Modifier.padding(12.dp).fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -153,4 +152,3 @@ fun SettingsScreen(
         }
     }
 }
-// (Helper components below...)

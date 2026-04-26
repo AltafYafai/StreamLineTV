@@ -90,45 +90,56 @@ fun FeaturedCarousel(movies: List<MediaItem>, onMediaClick: (MediaItem) -> Unit)
         itemCount = movies.size,
         modifier = Modifier
             .fillMaxWidth()
-            .height(450.dp)
+            .height(400.dp)
             .padding(16.dp),
-        dotIndicator = CarouselDefaults.dotIndicator(
-            modifier = Modifier.padding(bottom = 24.dp),
-            color = MaterialTheme.colorScheme.onSurface
-        )
+        carouselIndicator = {
+            CarouselDefaults.IndicatorRow(
+                itemCount = movies.size,
+                activeItemIndex = it,
+                modifier = Modifier
+                    .align(androidx.compose.ui.Alignment.BottomEnd)
+                    .padding(32.dp)
+            )
+        }
     ) { index ->
         val movie = movies[index]
-        CarouselItem(
-            background = {
+        
+        // Use a Surface for the background to handle focus/click correctly
+        Surface(
+            onClick = { onMediaClick(movie) },
+            scale = ClickableSurfaceDefaults.scale(focusedScale = 1.0f), // No zoom on carousel items
+            modifier = Modifier.fillMaxSize(),
+            shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.large)
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
                 AsyncImage(
                     model = movie.bannerUrl,
                     contentDescription = null,
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop,
-                    alpha = 0.7f
+                    alpha = 0.6f
                 )
-            },
-            onClick = { onMediaClick(movie) }
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(48.dp),
-                contentAlignment = androidx.compose.ui.Alignment.BottomStart
-            ) {
-                Column {
-                    Text(
-                        text = movie.title,
-                        style = MaterialTheme.typography.displayMedium,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = movie.description,
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.fillMaxWidth(0.5f),
-                        maxLines = 2,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(48.dp),
+                    contentAlignment = androidx.compose.ui.Alignment.BottomStart
+                ) {
+                    Column {
+                        Text(
+                            text = movie.title,
+                            style = MaterialTheme.typography.displayMedium,
+                            color = androidx.compose.ui.graphics.Color.White
+                        )
+                        Text(
+                            text = movie.description,
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.fillMaxWidth(0.5f),
+                            maxLines = 2,
+                            color = androidx.compose.ui.graphics.Color.LightGray
+                        )
+                    }
                 }
             }
         }
@@ -141,7 +152,8 @@ fun ContentRow(title: String, movies: List<MediaItem>, onMediaClick: (MediaItem)
         Text(
             text = title,
             style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(start = 32.dp, bottom = 12.dp)
+            modifier = Modifier.padding(start = 32.dp, bottom = 12.dp),
+            color = androidx.compose.ui.graphics.Color.White
         )
         TvLazyRow(
             contentPadding = PaddingValues(start = 32.dp, end = 32.dp),
