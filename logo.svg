@@ -1,24 +1,59 @@
-<svg width="200" height="200" viewBox="0 0 108 108" xmlns="http://www.w3.org/2000/svg">
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0B0F19"/>
-      <stop offset="100%" stop-color="#1A1F35"/>
+    <!-- Background Gradient -->
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f0c29"/>
+      <stop offset="50%" stop-color="#302b63"/>
+      <stop offset="100%" stop-color="#24243e"/>
     </linearGradient>
-    <linearGradient id="accentGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#00F2FE"/>
-      <stop offset="100%" stop-color="#4FACFE"/>
+    
+    <!-- Neon Wave Gradient 1 -->
+    <linearGradient id="wave1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00c6ff"/>
+      <stop offset="100%" stop-color="#0072ff"/>
     </linearGradient>
-    <linearGradient id="playGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#FFFFFF"/>
-      <stop offset="100%" stop-color="#E0E6ED"/>
+
+    <!-- Neon Wave Gradient 2 -->
+    <linearGradient id="wave2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f12711"/>
+      <stop offset="100%" stop-color="#f5af19"/>
     </linearGradient>
+    
+    <!-- Play Button Gradient -->
+    <linearGradient id="playBtn" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e0e0e0"/>
+    </linearGradient>
+
+    <!-- Drop Shadow for depth -->
     <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.4"/>
+      <feDropShadow dx="0" dy="8" stdDeviation="8" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+    
+    <!-- Glow Effect for Streams -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
     </filter>
   </defs>
 
-  <rect width="108" height="108" rx="24" fill="url(#bgGrad)"/>
-  <path d="M -10 64 Q 30 90 54 64 T 118 64" fill="none" stroke="url(#accentGrad)" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
-  <path d="M -10 54 Q 30 80 54 54 T 118 54" fill="none" stroke="url(#accentGrad)" stroke-width="8" stroke-linecap="round" filter="url(#shadow)"/>
-  <path d="M 44 38 L 44 70 L 72 54 Z" fill="url(#playGrad)" filter="url(#shadow)"/>
+  <!-- App Icon Base Background -->
+  <rect width="200" height="200" rx="44" fill="url(#bg)"/>
+
+  <!-- TV Outline (Subtle/Sleek) -->
+  <rect x="25" y="45" width="150" height="110" rx="16" fill="none" stroke="#ffffff" stroke-width="3" stroke-opacity="0.15"/>
+  
+  <!-- Wave 1 (Warm/Back) -->
+  <path d="M -10 125 Q 50 165 100 125 T 210 125" fill="none" stroke="url(#wave2)" stroke-width="10" stroke-linecap="round" filter="url(#glow)"/>
+  
+  <!-- Wave 2 (Cool/Front) -->
+  <path d="M -10 95 Q 50 55 100 95 T 210 95" fill="none" stroke="url(#wave1)" stroke-width="14" stroke-linecap="round" filter="url(#glow)"/>
+
+  <!-- Play Button (Glassmorphism effect) -->
+  <g filter="url(#shadow)">
+    <!-- Outer frosted ring -->
+    <circle cx="100" cy="100" r="38" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.4)" stroke-width="2"/>
+    <!-- Inner play triangle -->
+    <path d="M 88 78 L 88 122 L 124 100 Z" fill="url(#playBtn)"/>
+  </g>
 </svg>
