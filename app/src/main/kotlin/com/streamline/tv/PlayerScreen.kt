@@ -8,6 +8,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.Surface as MaterialSurface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -80,7 +81,7 @@ fun PlayerScreen(
             // Add subtitles
             subtitles.forEach { sub ->
                 val subConfig = Media3Item.SubtitleConfiguration.Builder(android.net.Uri.parse(sub.url))
-                    .setMimeType(MimeTypes.TEXT_VTT) // Standard for Stremio
+                    .setMimeType(MimeTypes.TEXT_VTT)
                     .setLanguage(sub.lang)
                     .setSelectionFlags(C.SELECTION_FLAG_DEFAULT)
                     .build()
@@ -95,7 +96,6 @@ fun PlayerScreen(
 
     DisposableEffect(Unit) {
         onDispose {
-            // Save position before release
             scope.launch {
                 libraryManager.savePlaybackState(mediaItem.id, null, exoPlayer.currentPosition)
             }
@@ -152,7 +152,7 @@ fun PlayerScreen(
                 LinearProgressIndicator(
                     progress = if (duration > 0) currentPosition.toFloat() / duration else 0f,
                     modifier = Modifier.weight(1f).padding(horizontal = 16.dp).height(8.dp),
-                    color = MaterialTheme.colorScheme.primary,
+                    color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
                     trackColor = Color.DarkGray
                 )
                 Text(formatTime(duration), color = Color.White)
@@ -196,19 +196,19 @@ fun PlayerScreen(
             }
         }
         
-        // Simple Subtitle Track Selection
+        // Simple Subtitle Track Selection using standard Material Surface to avoid TV-specific alpha issues
         if (showSubtitleMenu) {
             Box(Modifier.fillMaxSize().padding(48.dp), contentAlignment = Alignment.BottomEnd) {
-                Surface(
+                MaterialSurface(
                     modifier = Modifier.width(200.dp),
-                    shape = MaterialTheme.shapes.medium,
-                    colors = SurfaceDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                    shape = androidx.compose.material3.MaterialTheme.shapes.medium,
+                    color = androidx.compose.material3.MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     Column(Modifier.padding(16.dp)) {
-                        Text("Subtitles", style = MaterialTheme.typography.labelLarge)
+                        Text("Subtitles", style = MaterialTheme.typography.labelLarge, color = Color.White)
                         subtitles.forEach { sub ->
                             TextButton(onClick = { showSubtitleMenu = false }) {
-                                Text(sub.lang)
+                                Text(sub.lang, color = Color.White)
                             }
                         }
                     }
