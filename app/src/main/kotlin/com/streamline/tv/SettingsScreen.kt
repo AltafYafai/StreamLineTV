@@ -105,9 +105,8 @@ fun SettingsScreen(
 
             items(installedAddons.size) { index ->
                 val url = installedAddons[index]
-                // Each item is a focusable Row to make it easy to reach the delete button
                 Surface(
-                    onClick = { /* Could open addon details */ },
+                    onClick = { },
                     modifier = Modifier.fillMaxWidth(),
                     shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.medium),
                     colors = ClickableSurfaceDefaults.colors(
@@ -131,7 +130,6 @@ fun SettingsScreen(
                             }
                         }
 
-                        // Explicit focusable Delete button
                         Button(
                             onClick = { 
                                 scope.launch {
@@ -143,8 +141,7 @@ fun SettingsScreen(
                                 contentColor = Color.Red,
                                 focusedContainerColor = Color.Red,
                                 focusedContentColor = Color.White
-                            ),
-                            scale = ButtonDefaults.scale(focusedScale = 1.1f)
+                            )
                         ) {
                             Icon(Icons.Default.Delete, contentDescription = "Delete")
                             Spacer(Modifier.width(4.dp))
@@ -195,4 +192,82 @@ fun SettingsScreen(
         }
     }
 }
-// (ThemeButton, SettingCategoryHeader, SettingItem, SettingToggle below...)
+
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+fun ThemeButton(name: String, isSelected: Boolean, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        modifier = Modifier.width(120.dp),
+        shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.medium),
+        colors = ClickableSurfaceDefaults.colors(
+            containerColor = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+        )
+    ) {
+        Box(modifier = Modifier.padding(12.dp), contentAlignment = androidx.compose.ui.Alignment.Center) {
+            Text(text = name, style = MaterialTheme.typography.labelLarge)
+        }
+    }
+}
+
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+fun SettingCategoryHeader(title: String) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(vertical = 8.dp)
+    )
+}
+
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+fun SettingItem(title: String, subtitle: String) {
+    Surface(
+        onClick = { /* Handle click */ },
+        modifier = Modifier.fillMaxWidth(),
+        shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.medium),
+        colors = ClickableSurfaceDefaults.colors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        )
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(text = title, style = MaterialTheme.typography.titleMedium, color = Color.White)
+            Text(
+                text = subtitle, 
+                style = MaterialTheme.typography.bodySmall,
+                color = Color.LightGray
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+fun SettingToggle(title: String, initialValue: Boolean) {
+    var checked by remember { mutableStateOf(initialValue) }
+    
+    Surface(
+        onClick = { checked = !checked },
+        modifier = Modifier.fillMaxWidth(),
+        shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.medium),
+        colors = ClickableSurfaceDefaults.colors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        )
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp).fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+        ) {
+            Text(text = title, style = MaterialTheme.typography.titleMedium, color = Color.White)
+            Text(
+                text = if (checked) "ON" else "OFF",
+                color = if (checked) MaterialTheme.colorScheme.primary else Color.Gray,
+                style = MaterialTheme.typography.labelLarge
+            )
+        }
+    }
+}

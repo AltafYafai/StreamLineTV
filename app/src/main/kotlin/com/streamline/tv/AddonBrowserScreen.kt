@@ -76,7 +76,6 @@ fun AddonBrowserScreen(
             ) {
                 items(repoData!!.scrapers.size) { index ->
                     val scraper = repoData!!.scrapers[index]
-                    // Use a consistent ID format for checking installation
                     val addonKey = "repo:${scraper.id}"
                     val isInstalled = installedAddons.contains(addonKey)
                     
@@ -95,7 +94,7 @@ fun AddonBrowserScreen(
                             AsyncImage(
                                 model = scraper.logo,
                                 contentDescription = scraper.name,
-                                modifier = Modifier.size(64.dp).align(Alignment.CenterHorizontally),
+                                modifier = Modifier.size(48.dp).align(Alignment.CenterHorizontally),
                                 contentScale = ContentScale.Fit
                             )
                             Text(
@@ -111,13 +110,23 @@ fun AddonBrowserScreen(
                                 maxLines = 2
                             )
                             Spacer(modifier = Modifier.height(12.dp))
-                            Surface(
-                                onClick = { /* No-op, parent handles click */ },
-                                shape = MaterialTheme.shapes.extraSmall,
-                                colors = ClickableSurfaceDefaults.colors(
-                                    containerColor = if (isInstalled) Color.Red.copy(alpha = 0.2f) else MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                                    contentColor = if (isInstalled) Color.Red else MaterialTheme.colorScheme.primary
+                            
+                            val statusColors = if (isInstalled) {
+                                ClickableSurfaceDefaults.colors(
+                                    containerColor = Color.Red.copy(alpha = 0.2f),
+                                    contentColor = Color.Red
                                 )
+                            } else {
+                                ClickableSurfaceDefaults.colors(
+                                    containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                                    contentColor = MaterialTheme.colorScheme.primary
+                                )
+                            }
+
+                            Surface(
+                                onClick = { /* Logic handled by parent card */ },
+                                shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.extraSmall),
+                                colors = statusColors
                             ) {
                                 Text(
                                     text = if (isInstalled) "UNINSTALL" else "INSTALL",

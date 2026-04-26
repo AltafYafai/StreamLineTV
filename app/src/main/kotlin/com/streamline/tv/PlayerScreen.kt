@@ -25,6 +25,7 @@ import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.AspectRatioFrameLayout
+import androidx.tv.foundation.lazy.list.TvLazyColumn
 import androidx.tv.material3.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
@@ -142,7 +143,7 @@ fun PlayerScreen(
             modifier = Modifier.fillMaxSize()
         )
 
-        if (!videoUrl.isNotEmpty()) {
+        if (videoUrl.isEmpty()) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text("Resolving Stream...", color = Color.White)
             }
@@ -173,7 +174,7 @@ fun PlayerScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(formatTime(currentPosition), color = Color.White)
                     LinearProgressIndicator(
-                        progress = if (duration > 0) currentPosition.toFloat() / duration else 0f,
+                        progress = { if (duration > 0) currentPosition.toFloat() / duration else 0f },
                         modifier = Modifier.weight(1f).padding(horizontal = 16.dp).height(8.dp),
                         color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
                         trackColor = Color.DarkGray
@@ -264,7 +265,7 @@ fun PlayerScreen(
                             item { SettingHeader("Subtitles") }
                             items(subtitles.size) { index ->
                                 val sub = subtitles[index]
-                                SelectableItem(sub.lang, false) { /* In real app, toggle track */ }
+                                SelectableItem(sub.lang, false) { /* track toggle */ }
                             }
                         }
                     }
@@ -274,47 +275,13 @@ fun PlayerScreen(
     }
 }
 
-@Composable
-fun SettingHeader(title: String) {
-    Text(
-        text = title,
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
-    )
-}
-
-@OptIn(ExperimentalTvMaterial3Api::class)
-@Composable
-fun SelectableChip(label: String, isSelected: Boolean, onClick: () -> Unit) {
-    Surface(
-        onClick = onClick,
-        shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.small),
-        colors = ClickableSurfaceDefaults.colors(
-            containerColor = if (isSelected) MaterialTheme.colorScheme.primary else Color.DarkGray,
-            contentColor = if (isSelected) Color.Black else Color.White
-        ),
-        modifier = Modifier.padding(vertical = 4.dp)
-    ) {
-        Text(label, modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp))
-    }
-}
-
-@OptIn(ExperimentalTvMaterial3Api::class)
-@Composable
-fun SelectableItem(label: String, isSelected: Boolean, onClick: () -> Unit) {
-    Surface(
-        onClick = onClick,
-        modifier = Modifier.fillMaxWidth(),
-        shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.medium),
-        colors = ClickableSurfaceDefaults.colors(
-            containerColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) else Color.Transparent,
-            contentColor = if (isSelected) MaterialTheme.colorScheme.primary else Color.White
-        )
-    ) {
-        Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            Text(label, modifier = Modifier.weight(1f))
-            if (isSelected) Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp))
-        }
+fun formatTime(ms: Long): String {
+    val hours = TimeUnit.MILLISECONDS.toHours(ms)
+    val minutes = TimeUnit.MILLISECONDS.toMinutes(ms) % 60
+    val seconds = TimeUnit.MILLISECONDS.toSeconds(ms) % 60
+    return if (hours > 0) {
+        String.format("%d:%02d:%02d", hours, minutes, seconds)
+    } else {
+        String.format("%02d:%02d", minutes, seconds)
     }
 }
