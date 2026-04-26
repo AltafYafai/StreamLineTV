@@ -1,4 +1,4 @@
-@file:OptIn(UnstableApi::class, ExperimentalTvMaterial3Api::class)
+@file:OptIn(ExperimentalTvMaterial3Api::class)
 package com.streamline.tv
 
 import androidx.compose.animation.*
@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.rounded.SkipNext
-import androidx.compose.material.icons.rounded.Subtitles
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -162,13 +161,11 @@ fun PlayerScreen(
                         )
                     )
             ) {
-                // Top Metadata
                 Column(Modifier.padding(48.dp).align(Alignment.TopStart)) {
                     Text(text = mediaItem.title, style = MaterialTheme.typography.displaySmall, color = Color.White)
                     Text(text = mediaItem.metadata, style = MaterialTheme.typography.bodyLarge, color = Color.LightGray)
                 }
 
-                // Bottom Controls
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -250,7 +247,7 @@ fun PlayerScreen(
                     TvLazyColumn(Modifier.padding(24.dp)) {
                         item { Text("Playback Customization", style = MaterialTheme.typography.headlineSmall, color = Color.White) }
                         
-                        item { SettingHeader("Playback Speed") }
+                        item { PlayerSettingHeader("Playback Speed") }
                         item {
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 listOf(0.5f, 1.0f, 1.25f, 1.5f, 2.0f).forEach { speed ->
@@ -262,7 +259,7 @@ fun PlayerScreen(
                             }
                         }
 
-                        item { SettingHeader("Video Scaling") }
+                        item { PlayerSettingHeader("Video Scaling") }
                         item {
                             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 PlayerSelectableItem("Original (Fit)", resizeMode == AspectRatioFrameLayout.RESIZE_MODE_FIT) { resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT }
@@ -272,7 +269,7 @@ fun PlayerScreen(
                         }
 
                         if (subtitles.isNotEmpty()) {
-                            item { SettingHeader("Subtitles / Captions") }
+                            item { PlayerSettingHeader("Subtitles / Captions") }
                             items(subtitles.size) { index ->
                                 val sub = subtitles[index]
                                 PlayerSelectableItem(sub.lang, false) { /* track toggle */ }
@@ -286,7 +283,7 @@ fun PlayerScreen(
 }
 
 @Composable
-fun SettingHeader(title: String) {
+fun PlayerSettingHeader(title: String) {
     Text(
         text = title,
         style = MaterialTheme.typography.labelLarge,
