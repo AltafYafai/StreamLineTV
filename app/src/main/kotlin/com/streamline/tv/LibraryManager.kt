@@ -11,10 +11,8 @@ class LibraryManager(private val context: Context) {
     private val WATCHLIST_KEY = stringSetPreferencesKey("watchlist")
     private val HISTORY_KEY = stringSetPreferencesKey("search_history")
     
-    // Playback state: mediaId -> episodeId|position
     private fun playbackKey(mediaId: String) = stringPreferencesKey("playback_$mediaId")
 
-    // Watchlist
     val watchlistIds: Flow<Set<String>> = context.dataStore.data
         .map { it[WATCHLIST_KEY] ?: emptySet() }
 
@@ -29,7 +27,6 @@ class LibraryManager(private val context: Context) {
         }
     }
 
-    // Search History
     val searchHistory: Flow<List<String>> = context.dataStore.data
         .map { it[HISTORY_KEY]?.toList() ?: emptyList() }
 
@@ -45,7 +42,6 @@ class LibraryManager(private val context: Context) {
         context.dataStore.edit { it.remove(HISTORY_KEY) }
     }
 
-    // Playback Tracking
     fun getPlaybackState(mediaId: String): Flow<String?> = context.dataStore.data
         .map { it[playbackKey(mediaId)] }
 

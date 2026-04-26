@@ -21,7 +21,9 @@ class AddonManager(private val context: Context) {
         val prefs = context.dataStore.data.first()
         if (prefs[INITIALIZED_KEY] != true) {
             addAddon("https://raw.githubusercontent.com/yoruix/nuvio-providers/refs/heads/main/manifest.json")
-            context.dataStore.edit { it[INITIALIZED_KEY] = true }
+            context.dataStore.edit { preferences -> 
+                preferences[INITIALIZED_KEY] = true 
+            }
         }
     }
 

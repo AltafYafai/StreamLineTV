@@ -1,6 +1,5 @@
 package com.streamline.tv
 
-import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
@@ -9,8 +8,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -31,7 +28,6 @@ fun UpdateDialog(
                 .build()
                 .create(UpdateService::class.java)
             
-            // Replace with your actual repo API URL
             val release = service.getLatestRelease("repos/AltafYafai/StreamLineTV/releases/latest")
             if (release.tag_name != "v$currentVersion") {
                 latestRelease = release
@@ -54,13 +50,13 @@ fun UpdateDialog(
                 modifier = Modifier
                     .width(500.dp)
                     .wrapContentHeight(),
-                shape = MaterialTheme.shapes.large,
-                colors = SurfaceDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                shape = MaterialTheme.shapes.large
             ) {
                 Column(modifier = Modifier.padding(24.dp)) {
                     Text(
                         text = "Update Available: ${latestRelease!!.tag_name}",
-                        style = MaterialTheme.typography.headlineSmall
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = Color.White
                     )
                     
                     Spacer(modifier = Modifier.height(16.dp))
@@ -76,7 +72,8 @@ fun UpdateDialog(
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier
                             .heightIn(max = 200.dp)
-                            .padding(vertical = 8.dp)
+                            .padding(vertical = 8.dp),
+                        color = Color.White
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))
@@ -86,7 +83,7 @@ fun UpdateDialog(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Button(
-                            onClick = { /* In real app, launch browser or download manager */ },
+                            onClick = { /* Launch browser */ },
                             modifier = Modifier.weight(1f)
                         ) {
                             Text("Download")
