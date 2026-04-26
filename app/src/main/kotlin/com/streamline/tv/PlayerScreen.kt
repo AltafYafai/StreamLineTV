@@ -201,8 +201,8 @@ fun PlayerScreen(
             Box(Modifier.fillMaxSize().padding(48.dp), contentAlignment = Alignment.BottomEnd) {
                 Surface(
                     modifier = Modifier.width(200.dp),
-                    shape = ClickableSurfaceDefaults.shape(MaterialTheme.shapes.medium),
-                    colors = ClickableSurfaceDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                    shape = MaterialTheme.shapes.medium,
+                    colors = SurfaceDefaults.colors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                 ) {
                     Column(Modifier.padding(16.dp)) {
                         Text("Subtitles", style = MaterialTheme.typography.labelLarge)
